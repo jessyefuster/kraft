@@ -1,9 +1,9 @@
 {
-  "name": "docker-express-boilerplate",
+  "name": "kraft",
   "version": "1.0.0",
-  "description": "A Docker-node-typescript-typeorm-postgre boilerplate.",
+  "description": "Mobile app all-in-one dashboard",
   "main": "index.js",
-  "author": "Alexis Le Boucher",
+  "author": "Jessye Fuster",
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
