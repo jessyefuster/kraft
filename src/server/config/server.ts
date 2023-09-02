@@ -1,13 +1,16 @@
+import path from 'path';
 import cors from 'cors';
-import express, { urlencoded, json } from 'express';
-import morgan from 'morgan';
+import express, { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import createHttpError from 'http-errors';
+import morgan from 'morgan';
 
-import session from './session';
 import { errorHandler } from '../middlewares/errorHandler';
-import passport from './passport';
 import apiRoutes from '../routes/api';
+import passport from './passport';
+import session from './session';
+
+const apiPrefix = process.env.API_ROUTES_PREFIX || 'api';
 
 const createServer = () => {
     const app = express();
@@ -30,10 +33,17 @@ const createServer = () => {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    app.use(`/${process.env.API_ROUTES_PREFIX}`, apiRoutes);
-    app.get('/*', (req, res) => {
-        throw createHttpError(404, 'Resource Not Found');
-    });
+    app.use(`/${apiPrefix}`, apiRoutes);
+    if (process.env.NODE_ENV === 'production') {
+        app.use(express.static('dist/client'));
+        app.get('*', (req, res) => {
+            res.sendFile(path.join(__dirname, '../../client/index.html'));
+        });
+    } else {
+        app.get('*', (req, res) => {
+            throw createHttpError(404, 'Resource Not Found');
+        });
+    }
 
     app.use(errorHandler);
 

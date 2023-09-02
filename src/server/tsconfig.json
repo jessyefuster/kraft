@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "types": ["node", "jest"],
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "importHelpers": true,
+    "alwaysStrict": true,
+    "sourceMap": true,
+    "noImplicitThis": false,
+    "noUnusedParameters": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "outDir": "./dist/server",
+    "typeRoots": ["@types", "./node_modules/@types"],  
+  }
+}

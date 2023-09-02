@@ -1,5 +1,5 @@
-import { AppDataSource } from "../../src/data-source";
-import { User } from "../../src/entities/user";
+import { AppDataSource } from "../../src/server/data-source";
+import { User } from "../../src/server/entities/user";
 
 export interface TestUserProps {
     username?: string;

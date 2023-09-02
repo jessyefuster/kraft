@@ -3,7 +3,7 @@ node_modules
 .yarn/*
 
 # build
-build
+dist
 
 # testing
 /coverage

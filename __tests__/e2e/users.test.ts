@@ -1,8 +1,8 @@
 import { Server } from 'http';
 import request from 'supertest';
 
-import { AppDataSource } from '../../src/data-source';
-import { User } from '../../src/entities/user';
+import { AppDataSource } from '../../src/server/data-source';
+import { User } from '../../src/server/entities/user';
 import { clearDatabase, closeDatabase, createTestServer } from '../utils/testsHelpers';
 import { createTestUser } from '../utils/userHelpers';
 

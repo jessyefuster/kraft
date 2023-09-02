@@ -3,8 +3,8 @@ import { Server } from "http";
 import request from 'supertest';
 import { Express } from 'express';
 
-import createServer from "../../src/config/server";
-import { AppDataSource } from "../../src/data-source";
+import createServer from "../../src/server/config/server";
+import { AppDataSource } from "../../src/server/data-source";
 import { createTestUser, TestUserProps } from "./userHelpers";
 
 interface OverrideExpressOptions {
