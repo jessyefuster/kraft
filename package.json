@@ -74,7 +74,7 @@
     "lint": "eslint \"src/**/*.{ts,js}\"",
     "test": "jest --runInBand",
     "test:coverage": "jest --runInBand --collectCoverage",
-    "docker:up": "docker-compose up -d && npm run docker:shell",
+    "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:build": "docker build -t kraft .",
     "docker:shell:api": "docker exec -it api sh",
