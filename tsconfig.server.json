@@ -1,6 +1,7 @@
 {
+  "extends": "./tsconfig",
   "compilerOptions": {
-    "types": ["node", "jest"],
+    "types": ["node"],
     "target": "es6",
     "module": "commonjs",
     "moduleResolution": "node",
@@ -8,23 +9,12 @@
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "importHelpers": true,
-    "jsx": "react",
     "alwaysStrict": true,
     "sourceMap": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
     "noUnusedParameters": false,
-    "noImplicitAny": true,
-    "noImplicitThis": false,
-    "strictNullChecks": true,
-    "strict": true,
-    "skipLibCheck": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "outDir": "./dist/server",
-    "typeRoots": ["@types", "./node_modules/@types"],  
+    "outDir": "./dist/server"
   },
-  "include": ["src/server/**/*", "__tests__/**/*"],
-  "exclude": ["node_modules", "dist"],
-  "files": ["@types/express/index.d.ts"]
+  "include": ["src/server/**/*"]
 }

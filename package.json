@@ -68,7 +68,7 @@
     "client:dev": "vite",
     "server:dev": "nodemon -L src/server/index.ts --watch \"src/server/**/*.{ts,js}\"",
     "client:build": "vite build",
-    "server:build": "tsc -p tsconfig-build.server.json",
+    "server:build": "tsc -p tsconfig.server.json",
     "type-check": "tsc --noEmit",
     "lint:fix": "eslint --fix \"src/**/*.{ts,js}\"",
     "lint": "eslint \"src/**/*.{ts,js}\"",

@@ -12,8 +12,6 @@
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    /* Linting */
-    "noUnusedParameters": true
+    "noEmit": true
   }
 }
