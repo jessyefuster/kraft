@@ -10,8 +10,6 @@ import apiRoutes from '../routes/api';
 import passport from './passport';
 import session from './session';
 
-const apiPrefix = process.env.API_ROUTES_PREFIX || 'api';
-
 const createServer = () => {
     const app = express();
 
@@ -33,7 +31,7 @@ const createServer = () => {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    app.use(`/${apiPrefix}`, apiRoutes);
+    app.use(`/api`, apiRoutes);
     if (process.env.NODE_ENV === 'production') {
         app.use(express.static('dist/client'));
         app.get('*', (req, res) => {
