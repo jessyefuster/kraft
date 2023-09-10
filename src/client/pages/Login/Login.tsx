@@ -8,6 +8,14 @@ const ImageContainer = styled(Box)({
   flex: 1,
 });
 
+const FormContainer = styled(Box)({
+  minWidth: '40%',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center'
+});
+
 const CoverImage = styled('img')({
   objectFit: 'cover',
   width: '100%',
@@ -20,7 +28,9 @@ const Login = () => {
       <ImageContainer flex={1}>
         <CoverImage src={loginIllustrationUrl} />
       </ImageContainer>
-      <LoginForm />
+      <FormContainer padding={4}>
+        <LoginForm />
+      </FormContainer>
     </FixedPage>
   );
 };
