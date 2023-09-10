@@ -1,20 +1,17 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "types": ["node"],
+    "types": ["node", "jest"],
     "target": "es6",
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "importHelpers": true,
     "alwaysStrict": true,
     "sourceMap": true,
     "noUnusedParameters": false,
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "outDir": "./dist/server"
-  },
-  "include": ["src/server/**/*"]
+    "experimentalDecorators": true
+  }
 }
