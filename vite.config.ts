@@ -15,7 +15,7 @@ export default defineConfig({
     host: HOST,
     port: +VITE_PORT,
     proxy: {
-      '/api': {
+      '/api/': {
         target: `http://api:${PORT}`,
         changeOrigin: true
       }

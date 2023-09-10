@@ -2,7 +2,7 @@ import { Box, styled } from '@mui/material';
 
 import loginIllustrationUrl from '../../assets/login_illustration.jpg';
 import FixedPage from '../../components/layout/FixedPage';
-import LoginForm from '../../features/auth/LoginForm/LoginForm';
+import LoginForm from '../../features/Auth/components/LoginForm/LoginForm';
 
 const ImageContainer = styled(Box)({
   flex: 1,
