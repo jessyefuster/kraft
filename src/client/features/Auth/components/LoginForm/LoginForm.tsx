@@ -8,8 +8,7 @@ import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 
 import logo from '../../../../assets/logo.svg';
-import { useLoginForm } from '../../hooks/useLoginForm';
-import { LoginFormData } from '../../models/login';
+import { LoginFormData, useLoginForm } from '../../hooks/useLoginForm';
 
 const Logo = styled('img')({
   height: 50,
