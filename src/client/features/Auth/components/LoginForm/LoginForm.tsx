@@ -6,14 +6,10 @@ import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
 
 import logo from '../../../../assets/logo.svg';
-
-type Inputs = {
-  username: string;
-  password: string;
-};
+import { useLoginForm } from '../../hooks/useLoginForm';
+import { LoginFormData } from '../../models/login';
 
 const Logo = styled('img')({
   height: 50,
@@ -34,16 +30,13 @@ const LoginForm = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Inputs>();
+  } = useLoginForm();
+  const onSubmit = (data: LoginFormData) => console.info(data);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-  };
-
-  const onSubmit: SubmitHandler<Inputs> = (data) => {
-    console.info(data);
   };
 
   return (
