@@ -1,15 +1,15 @@
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { Box, styled } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
+import { Box, styled } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import logo from '../../../../assets/logo.svg';
 import Form from '../../../../components/forms/Form';
 import TextInput from '../../../../components/forms/TextInput';
-import { AuthLoginResponse } from '../../../../lib/api/models/auth';
 import { useLoginForm } from '../../hooks/useLoginForm';
 
 const Logo = styled('img')({
@@ -26,13 +26,14 @@ const FormContainer = styled(Box)({
 });
 
 const LoginForm = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const { form, requiredFields, isLoading, submitHandler } = useLoginForm({ defaultValues: { username: '', password: '' } });
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
-  const onSubmitSuccess = (data: AuthLoginResponse) => {
-    console.info('Logged in, should redirect', data);
+  const onSubmitSuccess = () => {
+    navigate('/');
   }
 
   return (
