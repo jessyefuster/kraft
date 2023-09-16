@@ -1,6 +1,6 @@
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Box, styled } from '@mui/material';
-import Button from '@mui/material/Button';
+import LoadingButton from '@mui/lab/LoadingButton';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Typography from '@mui/material/Typography';
@@ -9,6 +9,7 @@ import { useState } from 'react';
 import logo from '../../../../assets/logo.svg';
 import Form from '../../../../components/forms/Form';
 import TextInput from '../../../../components/forms/TextInput';
+import { AuthLoginResponse } from '../../../../lib/api/models/auth';
 import { useLoginForm } from '../../hooks/useLoginForm';
 
 const Logo = styled('img')({
@@ -26,20 +27,19 @@ const FormContainer = styled(Box)({
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { form, requiredFields } = useLoginForm({ defaultValues: { username: '', password: '' } });
-  const onSubmit = (data: unknown) => console.info(data);
+  const { form, requiredFields, isLoading, submitHandler } = useLoginForm({ defaultValues: { username: '', password: '' } });
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
-  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-  };
+  const onSubmitSuccess = (data: AuthLoginResponse) => {
+    console.info('Logged in, should redirect', data);
+  }
 
   return (
     <FormContainer>
       <Logo src={logo} alt="Kraft" />
       <Typography variant='h4' sx={{ mt: 3 }}>Hello !</Typography>
-      <Form form={form} onSubmit={onSubmit}>
+      <Form form={form} onSubmit={submitHandler} onSubmitSuccess={onSubmitSuccess}>
         <TextInput
           label="Nom d'utilisateur"
           name="username"
@@ -62,7 +62,6 @@ const LoginForm = () => {
                 <IconButton
                   aria-label="toggle password visibility"
                   onClick={handleClickShowPassword}
-                  onMouseDown={handleMouseDownPassword}
                   edge="end"
                 >
                   {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -71,7 +70,14 @@ const LoginForm = () => {
             )
           }}
         />
-        <Button type="submit" variant="contained" sx={{ mt: 3 }}>Se connecter</Button>
+        <LoadingButton
+          loading={isLoading}
+          type="submit"
+          variant="contained"
+          sx={{ mt: 3 }}
+        >
+          Se connecter
+        </LoadingButton>
       </Form>
     </FormContainer>
   );

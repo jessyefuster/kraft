@@ -1,10 +1,11 @@
 import { styled } from '@mui/material';
 import { PropsWithChildren } from 'react';
-import { FieldValues, SubmitHandler, UseFormReturn } from 'react-hook-form';
+import { FieldValues, UseFormReturn } from 'react-hook-form';
 
-interface Props<TFieldValues extends FieldValues> {
+interface Props<TFieldValues extends FieldValues, U> {
   form: UseFormReturn<TFieldValues>;
-  onSubmit: SubmitHandler<TFieldValues>;
+  onSubmit: (data: TFieldValues) => Promise<U>;
+  onSubmitSuccess?: (data: U) => unknown;
   children: React.ReactNode[];
 }
 
@@ -13,11 +14,16 @@ const StyledForm = styled('form')({
   flexDirection: 'column'
 });
 
-const Form = <T extends FieldValues>({ form, onSubmit, children }: PropsWithChildren<Props<T>>) => {
-  const { handleSubmit } = form;
+const Form = <T extends FieldValues, U>({ form, onSubmit, onSubmitSuccess, children }: PropsWithChildren<Props<T, U>>) => {
+
+  const handleSubmit = form.handleSubmit((formValue) => {
+    return onSubmit(formValue)
+      .then((data) => onSubmitSuccess && onSubmitSuccess(data))
+      .catch((error) => {console.warn(error)})
+  })
 
   return (
-    <StyledForm onSubmit={handleSubmit(onSubmit)}>
+    <StyledForm onSubmit={handleSubmit}>
       {children}
     </StyledForm>
   );
