@@ -21,7 +21,13 @@ const slice = createSlice({
       (state, { payload }) => {
         state.user = payload;
       }
-    )
+    );
+    builder.addMatcher(
+      api.endpoints.logOut.matchFulfilled,
+      (state) => {
+        state.user = null;
+      }
+    );
   }
 });
 

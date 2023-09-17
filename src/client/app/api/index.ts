@@ -12,9 +12,16 @@ export const api = createApi({
         body
       })
     }),
+    logOut: builder.mutation({
+      query: () => ({
+        url: '/auth/logout',
+        method: 'POST'
+      })
+    }),
   })
 });
 
 export const {
   useLogInMutation,
+  useLogOutMutation,
 } = api;
