@@ -62,9 +62,9 @@ const authenticated = (
     res: Response,
 ) => {
     if (req.isAuthenticated()) {
-        res.send('You are authenticated');
+        res.status(204).send();
     } else {
-        res.send('You are not authenticated');
+        res.status(401).send();
     }
 };
 

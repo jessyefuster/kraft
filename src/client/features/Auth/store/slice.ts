@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { User } from '../models';
-import { api } from '../../../app/api';
+import { api, isApiAuthRejected } from '../../../app/api';
 
 type AuthState = {
   user?: User | null;
@@ -24,6 +24,12 @@ const slice = createSlice({
     );
     builder.addMatcher(
       api.endpoints.logOut.matchFulfilled,
+      (state) => {
+        state.user = null;
+      }
+    );
+    builder.addMatcher(
+      isApiAuthRejected,
       (state) => {
         state.user = null;
       }
