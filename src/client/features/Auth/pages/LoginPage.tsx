@@ -1,8 +1,8 @@
 import { Box, styled } from '@mui/material';
 
-import loginIllustrationUrl from '../../assets/login_illustration.jpg';
-import FixedPage from '../../components/layout/FixedPage';
-import LoginForm from '../../features/Auth/components/LoginForm/LoginForm';
+import loginIllustrationUrl from '../../../assets/login_illustration.jpg';
+import FixedPage from '../../../components/layout/FixedPage';
+import LoginForm from '../components/LoginForm/LoginForm';
 
 const ImageContainer = styled(Box)({
   flex: 1,
@@ -22,7 +22,7 @@ const CoverImage = styled('img')({
   height: '100%'
 });
 
-const Login = () => {
+const LoginPage = () => {
   return (
     <FixedPage>
       <ImageContainer flex={1}>
@@ -35,4 +35,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginPage;

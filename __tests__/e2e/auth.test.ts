@@ -128,20 +128,18 @@ describe('Auth routes', () => {
         }
     });
 
-    test('Send "You are authenticated" for authenticated user', async () => {
+    test('Send success status for authenticated user', async () => {
         const agent = await createAuthenticatedAgent(server);
 
         const res = await agent.get('/api/auth/authenticated');
         
-        expect(res.statusCode).toEqual(200);
-        expect(res.text).toEqual('You are authenticated');
+        expect(res.statusCode).toEqual(204);
     });
 
-    test('Send "You are not authenticated" for non authenticated user', async () => {
+    test('Send unauthorized status for non authenticated user', async () => {
         const res = await request(server).get('/api/auth/authenticated');
         
-        expect(res.statusCode).toEqual(200);
-        expect(res.text).toEqual('You are not authenticated');
+        expect(res.statusCode).toEqual(401);
     });
 
     test('Authenticated user is considered as non authenticated if user has been deleted', async () => {
@@ -153,8 +151,7 @@ describe('Auth routes', () => {
 
         const res = await agent.get('/api/auth/authenticated');
         
-        expect(res.statusCode).toEqual(200);
-        expect(res.text).toEqual('You are not authenticated');
+        expect(res.statusCode).toEqual(401);
     });
 
     test('Logout user', async () => {
