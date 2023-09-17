@@ -5,13 +5,12 @@ import { AuthLoginBody, AuthLoginResponse } from '../../lib/api/models/auth';
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
   endpoints: (builder) => ({
-    logIn: builder.mutation({
-      query: (body: AuthLoginBody) => ({
+    logIn: builder.mutation<AuthLoginResponse, AuthLoginBody>({
+      query: (body) => ({
         url: '/auth/login',
         method: 'POST',
         body
-      }),
-      transformResponse: (response: { data: AuthLoginResponse }) => response.data
+      })
     }),
   })
 });

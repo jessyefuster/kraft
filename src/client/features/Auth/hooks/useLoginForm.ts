@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import yup, { getRequiredFields } from '../../../lib/yup';
-import { useLogInMutation } from '../../../store/api';
+import { useLogInMutation } from '../../../app/api';
 
 export type LoginFormData = yup.InferType<typeof validationSchema>;
 

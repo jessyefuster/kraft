@@ -1,9 +1,9 @@
 import { Box, Button, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-import FixedPage from '../../components/layout/FixedPage';
+import FixedPage from '../components/layout/FixedPage';
 
-const Home = () => {
+const HomePage = () => {
   return (
     <FixedPage sx={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
       <Box>
@@ -16,4 +16,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default HomePage;

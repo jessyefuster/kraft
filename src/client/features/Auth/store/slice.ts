@@ -1,0 +1,28 @@
+import { createSlice } from '@reduxjs/toolkit';
+
+import { User } from '../models';
+import { api } from '../../../app/api';
+
+type AuthState = {
+  user?: User | null;
+};
+
+const initialState: AuthState = {
+  user: undefined
+};
+
+const slice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addMatcher(
+      api.endpoints.logIn.matchFulfilled,
+      (state, { payload }) => {
+        state.user = payload;
+      }
+    )
+  }
+});
+
+export default slice;
