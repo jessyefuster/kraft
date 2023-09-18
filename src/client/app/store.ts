@@ -5,16 +5,19 @@ import storage from 'redux-persist/lib/storage';
 import { api } from './api';
 import authSlice from '../features/Auth/store/slice';
 
-const persistConfig = {
+const rootReducer = combineReducers({
+  [api.reducerPath]: api.reducer,
+  [authSlice.name]: authSlice.reducer
+});
+
+const persistedReducer = persistReducer({
   key: 'root',
   storage,
-};
+  blacklist: [api.reducerPath]
+}, rootReducer);
 
 export const store = configureStore({
-  reducer: persistReducer(persistConfig, combineReducers({
-    [api.reducerPath]: api.reducer,
-    [authSlice.name]: authSlice.reducer
-  })),
+  reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(api.middleware)
 });
