@@ -5,7 +5,7 @@ import Page from '../components/layout/Page';
 
 const NotFoundPage = () => {
   return (
-    <Page sx={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+    <Page showAppBar={false} sx={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
       <Box>
         <Typography variant='h2' marginBottom={4}>Page introuvable</Typography>
         <Link to="/">
