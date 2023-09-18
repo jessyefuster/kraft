@@ -2,6 +2,7 @@ import { Box, BoxProps, styled } from '@mui/material';
 import { PropsWithChildren } from 'react';
 
 import AppBar from './AppBar';
+import Drawer from './Drawer';
 
 interface MainProps {
   $orientation: 'row' | 'column'
@@ -21,13 +22,15 @@ const Container = styled(Box)({
 
 interface Props extends PropsWithChildren, BoxProps {
   showAppBar?: boolean;
+  showDrawer?: boolean;
   orientation?: 'row' | 'column';
 }
 
-const Page = ({ orientation = 'column', showAppBar = true, children, ...rest }: Props) => {
+const Page = ({ orientation = 'column', showAppBar = true, showDrawer = true, children, ...rest }: Props) => {
   return (
     <Container>
       {showAppBar && <AppBar />}
+      {showDrawer && <Drawer />}
       <Main as="main" $orientation={orientation} {...rest}>
         {children}
       </Main>

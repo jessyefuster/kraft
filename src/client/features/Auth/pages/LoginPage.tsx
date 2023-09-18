@@ -24,7 +24,7 @@ const CoverImage = styled('img')({
 
 const LoginPage = () => {
   return (
-    <Page orientation='row' showAppBar={false}>
+    <Page orientation='row' showAppBar={false} showDrawer={false}>
       <ImageContainer flex={1}>
         <CoverImage src={loginIllustrationUrl} />
       </ImageContainer>
