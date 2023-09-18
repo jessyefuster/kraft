@@ -1,7 +1,7 @@
 import { Box, styled } from '@mui/material';
 
 import loginIllustrationUrl from '../../../assets/login_illustration.jpg';
-import FixedPage from '../../../components/layout/FixedPage';
+import Page from '../../../components/layout/Page';
 import LoginForm from '../components/LoginForm/LoginForm';
 
 const ImageContainer = styled(Box)({
@@ -24,14 +24,14 @@ const CoverImage = styled('img')({
 
 const LoginPage = () => {
   return (
-    <FixedPage>
+    <Page orientation='row'>
       <ImageContainer flex={1}>
         <CoverImage src={loginIllustrationUrl} />
       </ImageContainer>
       <FormContainer padding={4}>
         <LoginForm />
       </FormContainer>
-    </FixedPage>
+    </Page>
   );
 };
 
