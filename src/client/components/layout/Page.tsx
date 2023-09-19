@@ -2,13 +2,15 @@ import { Box, BoxProps, styled } from '@mui/material';
 import { PropsWithChildren } from 'react';
 
 import AppBar from './AppBar';
-import Drawer from './Drawer';
+import NavigationDrawer from './NavigationDrawer';
 
 interface MainProps {
   $orientation: 'row' | 'column'
 }
 
-const Main = styled(Box)<MainProps>(({ $orientation }) => ({
+const Main = styled(Box, {
+  shouldForwardProp: (propName: PropertyKey) => !propName.toString().startsWith('$')
+})<MainProps>(({ $orientation }) => ({
   display: 'flex',
   height: '100%',
   flex: 1,
@@ -30,7 +32,7 @@ const Page = ({ orientation = 'column', showAppBar = true, showDrawer = true, ch
   return (
     <Container>
       {showAppBar && <AppBar />}
-      {showDrawer && <Drawer />}
+      {showDrawer && <NavigationDrawer />}
       <Main as="main" $orientation={orientation} {...rest}>
         {children}
       </Main>
