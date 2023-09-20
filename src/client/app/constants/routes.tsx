@@ -1,10 +1,11 @@
-import { redirect } from 'react-router-dom';
 import LayersRoundedIcon from '@mui/icons-material/LayersRounded';
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { redirect } from 'react-router-dom';
 
 import PrivateOutlet from '../../features/Auth/components/PrivateOutlet/PrivateOutlet';
 import LoginPage from '../../features/Auth/pages/LoginPage';
+import UsersPage from '../../features/Users/pages/UsersPage';
 import HomePage from '../../pages/Home';
 import NotFoundPage from '../../pages/NotFound';
 import { Route } from '../models/route';
@@ -35,7 +36,7 @@ export const routes: Route[] = [
       },
       {
         path: 'users',
-        element: <HomePage />,
+        element: <UsersPage title={'Utilisateurs'} />,
         meta: {
           title: 'Utilisateurs',
           iconElement: <PeopleRoundedIcon />
