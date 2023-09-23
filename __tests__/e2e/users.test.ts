@@ -3,7 +3,7 @@ import request from 'supertest';
 
 import { AppDataSource } from '../../src/server/data-source';
 import { User } from '../../src/server/entities/user';
-import { clearDatabase, closeDatabase, createTestServer } from '../utils/testsHelpers';
+import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 import { createTestUser } from '../utils/userHelpers';
 
 let server: Server;
@@ -90,5 +90,36 @@ describe('Users routes', () => {
         const res2 = await request(server).post('/api/users').send({ username: 'otherUsername', email, password: 'password' });
         expect(res2.statusCode).toEqual(409);
         expect(res2.body.message).toEqual('Email already exists');
+    });
+
+    test('Throw an error if unauthenticated user tries to get users list', async () => {
+        const res = await request(server).get('/api/users');
+
+        expect(res.statusCode).toEqual(403);
+    });
+
+    test('Get users list', async () => {
+        const agent = await createAuthenticatedAgent(server);
+
+        const res1 = await agent.get('/api/users');
+        expect(res1.statusCode).toEqual(200);
+        expect(res1.body).toHaveLength(1);
+
+        const user = await createTestUser({
+            username: 'fakeUser',
+            password: 'fakeUserPwd',
+            email: 'fakeUser@gmail.com'
+        });
+
+        const res2 = await agent.get('/api/users');
+        expect(res2.statusCode).toEqual(200);
+        expect(res2.body).toHaveLength(2);
+
+        const userRepo = AppDataSource.getRepository(User);
+        await userRepo.remove(user);
+
+        const res3 = await agent.get('/api/users');
+        expect(res3.statusCode).toEqual(200);
+        expect(res3.body).toHaveLength(1);
     });
 });
