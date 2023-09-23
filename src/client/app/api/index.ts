@@ -2,6 +2,7 @@ import { AnyAction, AsyncThunk, isRejectedWithValue } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 import { AuthLoginBody, AuthLoginResponse } from '../../lib/api/models/auth';
+import { UsersListResponse } from '../../lib/api/models/users';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
@@ -21,6 +22,9 @@ export const api = createApi({
     }),
     getAuthentication: builder.mutation<undefined, void>({
       query: () => '/auth/authenticated'
+    }),
+    getUsers: builder.query<UsersListResponse, void>({
+      query: () => '/users'
     })
   })
 });
@@ -36,5 +40,6 @@ export const isApiAuthRejected = (action: AnyAction): action is RejectedAction =
 export const {
   useLogInMutation,
   useLogOutMutation,
-  useGetAuthenticationMutation
+  useGetAuthenticationMutation,
+  useGetUsersQuery
 } = api;

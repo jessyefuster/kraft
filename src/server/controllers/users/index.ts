@@ -1,10 +1,10 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
 import { AppDataSource } from '../../data-source';
 import { User } from '../../entities/user';
 import { TypedRequestBody } from '../../types/express';
-import { UsersCreateBody } from '../../types/routes/users';
+import { UsersCreateBody, UsersListResponse } from '../../types/routes/users';
 import { validateCreateBody } from './validators';
 
 const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response) => {
@@ -53,6 +53,19 @@ const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response) => 
     }
 };
 
+const getAll = async (req: Request, res: Response<UsersListResponse>) => {
+    const userRepo = AppDataSource.getRepository(User);
+    const users = await userRepo.find();
+
+    res.send(users.map(({ id, username, email, createdAt }) => ({
+        id,
+        username,
+        email,
+        createdAt: createdAt.toISOString()
+    })))
+};
+
 export default {
     create,
+    getAll
 };

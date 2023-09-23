@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import { User } from '../models';
+import { User } from '../../Users/models';
 import { api, isApiAuthRejected } from '../../../app/api';
 
 type AuthState = {

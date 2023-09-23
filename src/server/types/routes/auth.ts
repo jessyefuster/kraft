@@ -1,10 +1,8 @@
+import { UserDTO } from './users';
+
 export interface AuthLoginBody {
     login: string;
     password: string;
 }
 
-export interface AuthLoginResponse {
-    id: string;
-    username: string;
-    email: string;
-}
+export type AuthLoginResponse = Omit<UserDTO, 'createdAt'>;
