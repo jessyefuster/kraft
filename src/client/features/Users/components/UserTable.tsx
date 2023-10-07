@@ -78,7 +78,10 @@ const DeleteUserButton = ({ onDeleteConfirm }: { onDeleteConfirm: () => void }) 
         </DialogContent>
         <DialogActions>
           <Button onClick={() => handleDialogClose()}>Retour</Button>
-          <Button onClick={() => handleDialogClose(true)}>
+          <Button
+            onClick={() => handleDialogClose(true)}
+            color='error'
+          >
             Supprimer
           </Button>
         </DialogActions>
