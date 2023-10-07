@@ -2,7 +2,7 @@ import { AnyAction, AsyncThunk, isRejectedWithValue } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 import { AuthLoginBody, AuthLoginResponse } from '../../lib/api/models/auth';
-import { UsersListResponse } from '../../lib/api/models/users';
+import { UserDTO, UsersListResponse } from '../../lib/api/models/users';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
@@ -25,7 +25,13 @@ export const api = createApi({
     }),
     getUsers: builder.query<UsersListResponse, void>({
       query: () => '/users'
-    })
+    }),
+    deleteUser: builder.mutation<unknown, UserDTO['id']>({
+      query: (id) => ({
+        url: `/users/${id}`,
+        method: 'DELETE'
+      })
+    }),
   })
 });
 
@@ -41,5 +47,6 @@ export const {
   useLogInMutation,
   useLogOutMutation,
   useGetAuthenticationMutation,
-  useGetUsersQuery
+  useGetUsersQuery,
+  useDeleteUserMutation
 } = api;
