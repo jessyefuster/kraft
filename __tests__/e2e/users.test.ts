@@ -122,4 +122,33 @@ describe('Users routes', () => {
         expect(res3.statusCode).toEqual(200);
         expect(res3.body).toHaveLength(1);
     });
+
+    test('User deletion fails if unauthenticated', async () => {
+        const res = await request(server).delete('/api/users/fakeUserId');
+
+        expect(res.statusCode).toEqual(401);
+    });
+
+    test('User deletion fails if user doesn\'t exist', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const res = await agent.delete('/api/users/fakeUserId');
+
+        expect(res.statusCode).toEqual(404);
+    });
+
+    test('Delete user', async () => {
+        const userRepo = AppDataSource.getRepository(User);
+        const user = await createTestUser({
+            username: 'fakeUser',
+            password: 'fakeUserPwd',
+            email: 'fakeUser@gmail.com'
+        });
+        
+        const agent = await createAuthenticatedAgent(server);
+        const res = await agent.delete(`/api/users/${user.id}`);        
+        expect(res.statusCode).toEqual(204);
+
+        const repoUser = await userRepo.findOneBy({ id: user.id });
+        expect(repoUser).toBeNull();
+    });
 });
