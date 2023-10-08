@@ -136,19 +136,21 @@ describe('Users routes', () => {
         expect(res.statusCode).toEqual(404);
     });
 
-    test('Delete user', async () => {
+    test('Delete a user', async () => {
         const userRepo = AppDataSource.getRepository(User);
-        const user = await createTestUser({
-            username: 'fakeUser',
-            password: 'fakeUserPwd',
-            email: 'fakeUser@gmail.com'
-        });
-        
         const agent = await createAuthenticatedAgent(server);
-        const res = await agent.delete(`/api/users/${user.id}`);        
+        
+        await createTestUser({ username: 'fake1', password: 'password', email: 'fake1@gmail.com' });
+        const userToDelete = await createTestUser({ username: 'fake2', password: 'password', email: 'fake2@gmail.com' });
+
+        const usersCountBeforeDelete = await userRepo.count();
+        
+        const res = await agent.delete(`/api/users/${userToDelete.id}`);        
         expect(res.statusCode).toEqual(204);
 
-        const repoUser = await userRepo.findOneBy({ id: user.id });
+        const repoUser = await userRepo.findOneBy({ id: userToDelete.id });
+        const usersCountAfterDelete = await userRepo.count();
         expect(repoUser).toBeNull();
+        expect(usersCountAfterDelete).toBe(usersCountBeforeDelete - 1);
     });
 });
