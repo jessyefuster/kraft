@@ -95,7 +95,7 @@ describe('Users routes', () => {
     test('Throw an error if unauthenticated user tries to get users list', async () => {
         const res = await request(server).get('/api/users');
 
-        expect(res.statusCode).toEqual(403);
+        expect(res.statusCode).toEqual(401);
     });
 
     test('Get users list', async () => {
