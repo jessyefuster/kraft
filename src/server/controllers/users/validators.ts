@@ -1,7 +1,8 @@
 import createHttpError from 'http-errors';
 import isEmail from 'validator/lib/isEmail';
+import isUUID from 'validator/lib/isUUID';
 
-import { UsersCreateBody } from '../../types/routes/users';
+import { UsersCreateBody, UsersDeleteParams } from '../../types/routes/users';
 
 export const validateCreateBody = (body: Partial<UsersCreateBody>) => {
     const { username, email, password } = body;
@@ -30,4 +31,17 @@ export const validateCreateBody = (body: Partial<UsersCreateBody>) => {
     // As the function checked the properties are not missing,
     // return the body as original type
     return body as UsersCreateBody;
+};
+
+export const validateDeleteParams = (params: Partial<UsersDeleteParams>) => {
+    const { id } = params;
+
+    if (!id) {
+        throw createHttpError(400, 'User id required');
+    }
+    if (!isUUID(id, '4')) {
+        throw createHttpError(404, 'Cannot find user');
+    }
+
+    return params as UsersDeleteParams;
 };

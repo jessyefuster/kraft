@@ -2,17 +2,19 @@ import { AnyAction, AsyncThunk, isRejectedWithValue } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 import { AuthLoginBody, AuthLoginResponse } from '../../lib/api/models/auth';
-import { UsersListResponse } from '../../lib/api/models/users';
+import { UserDTO, UsersListResponse } from '../../lib/api/models/users';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
+  tagTypes: ['User', 'UNAUTHORIZED'],
   endpoints: (builder) => ({
     logIn: builder.mutation<AuthLoginResponse, AuthLoginBody>({
       query: (body) => ({
         url: '/auth/login',
         method: 'POST',
         body
-      })
+      }),
+      invalidatesTags: (result) => result ? ['UNAUTHORIZED'] : []
     }),
     logOut: builder.mutation({
       query: () => ({
@@ -24,8 +26,18 @@ export const api = createApi({
       query: () => '/auth/authenticated'
     }),
     getUsers: builder.query<UsersListResponse, void>({
-      query: () => '/users'
-    })
+      query: () => '/users',
+      providesTags: (result, error) => error?.status === 401
+        ? ['User', 'UNAUTHORIZED']
+        : ['User']
+    }),
+    deleteUser: builder.mutation<unknown, UserDTO['id']>({
+      query: (id) => ({
+        url: `/users/${id}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['User']
+    }),
   })
 });
 
@@ -41,5 +53,6 @@ export const {
   useLogInMutation,
   useLogOutMutation,
   useGetAuthenticationMutation,
-  useGetUsersQuery
+  useGetUsersQuery,
+  useDeleteUserMutation
 } = api;

@@ -92,7 +92,7 @@ describe('Auth routes', () => {
         const agent = await createAuthenticatedAgent(server, { username, password });
 
         const res = await agent.post('/api/auth/login').send({ login: username, password });
-        expect(res.statusCode).toEqual(403);
+        expect(res.statusCode).toEqual(401);
         expect(res.body.message).toEqual('User must not be authenticated');
     });
 
@@ -165,7 +165,7 @@ describe('Auth routes', () => {
 
     test('Throw an error if unauthenticated user tries to logout', async () => {
         const res = await request(server).post('/api/auth/logout');
-        expect(res.statusCode).toEqual(403);
+        expect(res.statusCode).toEqual(401);
         expect(res.body.message).toEqual('User must be authenticated');
     });
 

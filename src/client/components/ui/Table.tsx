@@ -27,7 +27,7 @@ const Table = <T extends NodeRecord>({ label, columns, items }: Props<T>) => {
         <TableHead>
           <TableRow>
             {columns.map(column => (
-              <TableCell {...column}>{column.title}</TableCell>
+              <TableCell key={column.title || 'unknown'} {...column}>{column.title}</TableCell>
             ))}
           </TableRow>
         </TableHead>
@@ -37,8 +37,8 @@ const Table = <T extends NodeRecord>({ label, columns, items }: Props<T>) => {
               key={key}
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
-              {Object.values(data).map((value, index) => (
-                <TableCell align={columns[index].align}>{value}</TableCell>
+              {Object.entries(data).map(([dataKey, value], index) => (
+                <TableCell key={`item-${key}-column-${dataKey}`} align={columns[index].align}>{value}</TableCell>
               ))}
             </TableRow>
           ))}

@@ -95,7 +95,7 @@ describe('Users routes', () => {
     test('Throw an error if unauthenticated user tries to get users list', async () => {
         const res = await request(server).get('/api/users');
 
-        expect(res.statusCode).toEqual(403);
+        expect(res.statusCode).toEqual(401);
     });
 
     test('Get users list', async () => {
@@ -121,5 +121,36 @@ describe('Users routes', () => {
         const res3 = await agent.get('/api/users');
         expect(res3.statusCode).toEqual(200);
         expect(res3.body).toHaveLength(1);
+    });
+
+    test('User deletion fails if unauthenticated', async () => {
+        const res = await request(server).delete('/api/users/fakeUserId');
+
+        expect(res.statusCode).toEqual(401);
+    });
+
+    test('User deletion fails if user doesn\'t exist', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const res = await agent.delete('/api/users/fakeUserId');
+
+        expect(res.statusCode).toEqual(404);
+    });
+
+    test('Delete a user', async () => {
+        const userRepo = AppDataSource.getRepository(User);
+        const agent = await createAuthenticatedAgent(server);
+        
+        await createTestUser({ username: 'fake1', password: 'password', email: 'fake1@gmail.com' });
+        const userToDelete = await createTestUser({ username: 'fake2', password: 'password', email: 'fake2@gmail.com' });
+
+        const usersCountBeforeDelete = await userRepo.count();
+        
+        const res = await agent.delete(`/api/users/${userToDelete.id}`);        
+        expect(res.statusCode).toEqual(204);
+
+        const repoUser = await userRepo.findOneBy({ id: userToDelete.id });
+        const usersCountAfterDelete = await userRepo.count();
+        expect(repoUser).toBeNull();
+        expect(usersCountAfterDelete).toBe(usersCountBeforeDelete - 1);
     });
 });
