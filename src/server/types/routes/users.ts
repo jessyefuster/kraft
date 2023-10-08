@@ -11,4 +11,8 @@ export interface UsersCreateBody {
     password: string;
 }
 
+export interface UsersDeleteParams {
+    id: string;
+}
+
 export type UsersListResponse = Array<UserDTO>;

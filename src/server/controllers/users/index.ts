@@ -5,7 +5,7 @@ import { AppDataSource } from '../../data-source';
 import { User } from '../../entities/user';
 import { TypedRequestBody } from '../../types/express';
 import { UsersCreateBody, UsersListResponse } from '../../types/routes/users';
-import { validateCreateBody } from './validators';
+import { validateCreateBody, validateDeleteParams } from './validators';
 
 const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response) => {
     const { username, email, password } = validateCreateBody(req.body);
@@ -65,7 +65,23 @@ const getAll = async (req: Request, res: Response<UsersListResponse>) => {
     })))
 };
 
+const deleteOne = async (req: Request, res: Response) => {
+    const { id } = validateDeleteParams(req.params);
+    
+    const userRepo = AppDataSource.getRepository(User);
+    const user = await userRepo.findOneBy({ id });
+
+    if (!user) {
+        throw createHttpError(404, 'Cannot find user');
+    }
+
+    await userRepo.remove(user);
+
+    res.status(204).send();
+};
+
 export default {
     create,
-    getAll
+    getAll,
+    deleteOne
 };
