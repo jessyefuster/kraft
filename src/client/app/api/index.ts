@@ -6,13 +6,15 @@ import { UserDTO, UsersListResponse } from '../../lib/api/models/users';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
+  tagTypes: ['User', 'UNAUTHORIZED'],
   endpoints: (builder) => ({
     logIn: builder.mutation<AuthLoginResponse, AuthLoginBody>({
       query: (body) => ({
         url: '/auth/login',
         method: 'POST',
         body
-      })
+      }),
+      invalidatesTags: (result) => result ? ['UNAUTHORIZED'] : []
     }),
     logOut: builder.mutation({
       query: () => ({
@@ -24,13 +26,17 @@ export const api = createApi({
       query: () => '/auth/authenticated'
     }),
     getUsers: builder.query<UsersListResponse, void>({
-      query: () => '/users'
+      query: () => '/users',
+      providesTags: (result, error) => error?.status === 401
+        ? ['User', 'UNAUTHORIZED']
+        : ['User']
     }),
     deleteUser: builder.mutation<unknown, UserDTO['id']>({
       query: (id) => ({
         url: `/users/${id}`,
         method: 'DELETE'
-      })
+      }),
+      invalidatesTags: ['User']
     }),
   })
 });
