@@ -2,7 +2,7 @@ import type { Server } from 'http';
 import request from 'supertest';
 
 import { AppDataSource } from '../../src/data-source';
-import { User } from '../../src/entities/user';
+import { UserEntity } from '../../src/entities/user';
 import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 import { createTestUser } from '../utils/userHelpers';
 
@@ -18,7 +18,7 @@ afterAll(async () => {
 });
 
 describe('Auth routes', () => {
-    afterEach(async () => {
+    beforeEach(async () => {
         await clearDatabase();
     });
 
@@ -145,7 +145,7 @@ describe('Auth routes', () => {
         const username = 'fakeUser';
         const agent = await createAuthenticatedAgent(server, { username });
 
-        const repo = AppDataSource.getRepository(User);
+        const repo = AppDataSource.getRepository(UserEntity);
         await repo.delete({ username });
 
         const res = await agent.get('/api/auth/authenticated');

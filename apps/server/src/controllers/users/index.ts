@@ -3,11 +3,14 @@ import createHttpError from 'http-errors';
 import type { UsersCreateBody, UsersListResponse } from '@internal/types';
 
 import { AppDataSource } from '../../data-source';
-import { User } from '../../entities/user';
+import { RoleEntity } from '../../entities/role';
+import { UserEntity } from '../../entities/user';
+import { createRole } from '../../services/roles';
+import { createUserDTOFromEntity, createUserEntity } from '../../services/user';
 import { validateCreateBody, validateDeleteParams } from './validators';
 
 const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response) => {
-    const { username, email, password } = validateCreateBody(req.body);
+    const { username, email, password, roleId } = validateCreateBody(req.body);
 
     // Create a query runner to control the transactions, it allows to cancel the transaction if we need to
     const queryRunner = AppDataSource.createQueryRunner();
@@ -17,7 +20,7 @@ const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response) => 
     await queryRunner.startTransaction();
 
     try {
-        const userRepo = queryRunner.manager.getRepository(User);
+        const userRepo = queryRunner.manager.getRepository(UserEntity);
         const usernameExists = await userRepo.exist({
             where: { username }
         });
@@ -32,10 +35,21 @@ const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response) => 
             throw createHttpError(409, 'Email already exists');
         }
 
-        const newUser = new User();
-        newUser.username = username;
-        newUser.email = email;
-        newUser.setPassword(password);
+        const roleRepo = queryRunner.manager.getRepository(RoleEntity);
+        const roleEntity = await roleRepo.findOneBy({ id: roleId });
+        if (!roleEntity) {
+            throw createHttpError(422, 'Cannot find role');
+        }
+
+        const role = createRole(roleEntity);
+
+        const newUser = createUserEntity({
+            username,
+            email,
+            password,
+            role
+        });
+
         await queryRunner.manager.save(newUser);
 
         // No exceptions occured, so we commit the transaction
@@ -53,21 +67,18 @@ const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response) => 
 };
 
 const getAll = async (req: Request, res: Response<UsersListResponse>) => {
-    const userRepo = AppDataSource.getRepository(User);
-    const users = await userRepo.find();
+    const userRepo = AppDataSource.getRepository(UserEntity);
+    const usersEntities = await userRepo.find({ relations: { role: true } });
 
-    res.send(users.map(({ id, username, email, createdAt }) => ({
-        id,
-        username,
-        email,
-        createdAt: createdAt.toISOString()
-    })));
+    const users = usersEntities.map(entity => createUserDTOFromEntity(entity));
+
+    res.send(users);
 };
 
 const deleteOne = async (req: Request, res: Response) => {
     const { id } = validateDeleteParams(req.params);
     
-    const userRepo = AppDataSource.getRepository(User);
+    const userRepo = AppDataSource.getRepository(UserEntity);
     const user = await userRepo.findOneBy({ id });
 
     if (!user) {

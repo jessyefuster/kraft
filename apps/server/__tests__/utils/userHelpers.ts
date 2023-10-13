@@ -1,5 +1,8 @@
 import { AppDataSource } from '../../src/data-source';
-import { User } from '../../src/entities/user';
+import { UserEntity } from '../../src/entities/user';
+import { createRole } from '../../src/services/roles';
+import { createUserEntity } from '../../src/services/user';
+import { getDefaultRole } from './roleHelpers';
 
 export interface TestUserProps {
     username?: string;
@@ -13,12 +16,14 @@ export interface TestUserProps {
  * @returns 
  */
 export const createTestUser = async (testUser?: TestUserProps) => {
-    const userRepo = AppDataSource.getRepository(User);
+    const userRepo = AppDataSource.getRepository(UserEntity);
 
-    const user = new User();
-    user.username = testUser?.username || 'testUser';
-    user.email = testUser?.email || 'testUser@gmail.com';
-    user.setPassword(testUser?.password || 'password');
+    const user = createUserEntity({
+        username: testUser?.username || 'testUser',
+        email: testUser?.email || 'testUser@gmail.com',
+        password: testUser?.password || 'password',
+        role: createRole(await getDefaultRole())
+    });
 
     await userRepo.save(user);
 

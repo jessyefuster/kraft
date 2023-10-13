@@ -1,3 +1,4 @@
+import type { UserDTO } from '@internal/types';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -8,9 +9,9 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import { useState } from 'react';
-import type { UserDTO } from '@internal/types';
 
 import { useDeleteUserMutation } from '../../../app/api';
+import AutoColoredChip from '../../../components/ui/AutoColoredChip';
 import type { Column } from '../../../components/ui/Table';
 import Table from '../../../components/ui/Table';
 
@@ -19,6 +20,7 @@ const formatTable = (users: UserDTO[], onDeleteClick: (id: UserDTO['id']) => voi
     { title: undefined, 'aria-label': 'Avatar' },
     { title: 'Nom d\'utilisateur' },
     { title: 'E-mail' },
+    { title: 'Rôle' },
     { title: 'Date de création', align: 'right' },
     { title: 'Actions', align: 'right' }
   ];
@@ -28,6 +30,7 @@ const formatTable = (users: UserDTO[], onDeleteClick: (id: UserDTO['id']) => voi
       avatar: <Avatar>{user.username[0].toUpperCase()}</Avatar>,
       username: user.username,
       email: user.email,
+      role: user.role && <AutoColoredChip label={user.role.name} labelStr={user.role.name} onClick={() => {}} variant="outlined" />,
       createdAt: user.createdAt,
       actions: (
         <DeleteUserButton onDeleteConfirm={() => onDeleteClick(user.id)} />
