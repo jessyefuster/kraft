@@ -240,7 +240,6 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 | DB_PORT             | Database host port | ❌ |
 | DB_HOST_PORT        | Database mapped port. On the machine that use Docker, the database will be accessible on this port | ❌ |
 | CORS_ORIGIN_ALLOWED | List of CORS allowed origins | ✔️ |
-| API_ROUTES_PREFIX   | The API routes prefix. Is set to `/api`, all the routes are accessible by querying `/api/...`   | ✔️ |
 | TEST_DB_HOST        | Test database host | ❌
 | TEST_DB_NAME        | Test database name | ❌
 | TEST_DB_HOST_PORT   | Test database mapped port. On the machine that use Docker, the test database will be accessible on this port | ❌
