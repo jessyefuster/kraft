@@ -1,4 +1,5 @@
 import type { RoleDTO } from '@internal/types';
+
 import { RoleEntity } from '../entities/role';
 import type { Mapper } from '../models/mappers';
 import type { Role } from '../models/roles';

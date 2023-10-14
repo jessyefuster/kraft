@@ -14,7 +14,7 @@ const getAll = async (req: Request, res: Response<RolesListResponse>) => {
     const permissionMapper = new PermissionMapper(permissionGroupMapper);
     const roleMapper = new RoleMapper(permissionMapper);
 
-    const roles = rolesEntities.map((roleEntity) => roleMapper.fromEntity(roleEntity))
+    const roles = rolesEntities.map((roleEntity) => roleMapper.fromEntity(roleEntity));
 
     res.send(roles.map(role => roleMapper.toDTO(role)));
 };

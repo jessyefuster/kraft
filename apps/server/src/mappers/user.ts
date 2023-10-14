@@ -1,4 +1,5 @@
 import type { UserDTO } from '@internal/types';
+
 import { UserEntity } from '../entities/user';
 import type { Mapper } from '../models/mappers';
 import type { User } from '../models/users';
@@ -33,7 +34,7 @@ export class UserMapper implements Mapper<User> {
         }
 
         if (user.role) {
-            entity.role = this.roleMapper.toEntity(user.role)
+            entity.role = this.roleMapper.toEntity(user.role);
         }
 
         entity.email = user.email;

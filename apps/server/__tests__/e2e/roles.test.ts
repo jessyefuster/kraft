@@ -15,7 +15,7 @@ beforeAll(async() => {
 afterAll(async () => {
     await closeDatabase();
     server.close();
-})
+});
 
 describe('Roles routes', () => {
     beforeEach(async () => {

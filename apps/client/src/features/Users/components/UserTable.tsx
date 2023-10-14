@@ -42,7 +42,7 @@ const formatTable = (users: UserDTO[], onDeleteClick: (id: UserDTO['id']) => voi
     columns,
     items
   };
-}
+};
 
 interface Props {
   users: UserDTO[];
