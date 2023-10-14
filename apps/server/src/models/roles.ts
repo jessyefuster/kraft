@@ -5,3 +5,7 @@ export interface Role {
     name: string;
     permissions?: Permission[];
 }
+
+export interface RoleWithPermission extends Role {
+    permissions: Permission[];
+}

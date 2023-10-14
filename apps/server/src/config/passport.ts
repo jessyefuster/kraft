@@ -21,6 +21,7 @@ passport.use(
                 // Search a user whose username or email is the login parameter
                 const userEntity = await userRepo.findOne({
                     where: [{ username: login }, { email: login }],
+                    relations: { role: { permissions: true } }
                 });
 
                 // If the user doesn't exist or the password is wrong, return error as null and user as null
@@ -49,15 +50,22 @@ passport.serializeUser((user: any, done: any) => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 passport.deserializeUser(async (req: Request, id: string, done: any) => {
     const userRepo = AppDataSource.getRepository(UserEntity);
-    const user = await userRepo.findOneBy({ id });
+    const userEntity = await userRepo.findOne({
+        where: { id },
+        relations: { role: { permissions: true } }
+    });
+    const permissionGroupMapper = new PermissionGroupMapper();
+    const permissionMapper = new PermissionMapper(permissionGroupMapper);
+    const roleMapper = new RoleMapper(permissionMapper);
+    const userMapper = new UserMapper(roleMapper);
 
-    if (!user) {
+    if (!userEntity) {
         // if passport tries to deserialize user but id doesn't exist anymore in db,
         // it means the user has been deleted, so logout the request
         req.logout(() => undefined);
         done(null, null);
     } else {
-        done(null, user);
+        done(null, userMapper.fromEntity(userEntity));
     }
 });
 

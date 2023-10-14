@@ -1,4 +1,4 @@
-import type { Role } from './roles';
+import type { Role, RoleWithPermission } from './roles';
 
 export interface User {
     id?: string;
@@ -9,4 +9,8 @@ export interface User {
     email: string;
     role?: Role;
     password?: string;
+}
+
+export interface UserWithRole extends User {
+    role: RoleWithPermission;
 }
