@@ -20,7 +20,7 @@ module.exports = {
     'require-await': 'off',
     'arrow-body-style': ['error', 'as-needed'],
     'eqeqeq': 'error',
-    'quotes': ['warn', 'single'],
+    'quotes': ['warn', 'single', { avoidEscape: true }],
   
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/require-await': 'error',
