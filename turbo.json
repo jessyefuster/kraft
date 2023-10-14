@@ -31,10 +31,12 @@
       "cache": false
     },
     "migration:revert": {
-      "outputs": []
+      "outputs": [],
+      "cache": false
     },
     "migration:create": {
-      "outputs": []
+      "outputs": [],
+      "cache": false
     }
   }
 }
