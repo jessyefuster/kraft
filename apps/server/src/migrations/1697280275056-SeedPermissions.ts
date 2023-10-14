@@ -30,11 +30,11 @@ type PermissionCode = typeof PERMISSION_CODES[number];
 const GROUP_CODES_VALUES_QUERY = GROUP_CODES.map(code => `'${code}'`).join(',');
 const PERMISSION_CODES_VALUES_QUERY = PERMISSION_CODES.map(code => `'${code}'`).join(',');
 
-export class SeedPermissions1696964276870 implements MigrationInterface {
+export class SeedPermissions1697280275056 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         // ADMIN ROLE
-        await queryRunner.query(`INSERT INTO "role" (name) VALUES ('Admin')`);
+        await queryRunner.query(`INSERT INTO "role" (name, description) VALUES ('Admin', 'Rôle de base, non modifiable')`);
 
         // GROUPS
         const groupsRecord: Record<GroupCode, Group> = {
@@ -83,14 +83,6 @@ export class SeedPermissions1696964276870 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        const dbPermissions: Pick<WithId<Permission>, 'id'>[] = await queryRunner.query(`SELECT "id" FROM "permission" WHERE "code" IN (${PERMISSION_CODES_VALUES_QUERY})`);
-        const permissionsIdsValuesQuery = dbPermissions.map(permission => `'${permission.id}'`).join(',')
-
-        // DELETE PERMISSIONS FROM ADMIN
-        const [adminRole]: [Role] = await queryRunner.query(`SELECT "id" FROM "role" WHERE "name" = 'Admin'`);
-
-        await queryRunner.query(`DELETE FROM "role_permissions_permission" WHERE "roleId" = '${adminRole.id}' AND "permissionId" IN (${permissionsIdsValuesQuery})`);
-
         // DELETE PERMISSIONS
         await queryRunner.query(`DELETE FROM "permission" WHERE "code" IN (${PERMISSION_CODES_VALUES_QUERY})`);
 

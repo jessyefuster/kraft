@@ -1,13 +1,13 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateRolesAndPermissions1696964261070 implements MigrationInterface {
-    name = 'CreateRolesAndPermissions1696964261070'
+export class CreateRolesAndPermissions1697280233112 implements MigrationInterface {
+    name = 'CreateRolesAndPermissions1697280233112'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "permission_group" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "code" character varying(20) NOT NULL, "description" character varying(255), CONSTRAINT "UQ_9ea057810a9ec846a9df58a887c" UNIQUE ("code"), CONSTRAINT "PK_b1372c1e0a14c1b45ab7cce7857" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "role" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(255) NOT NULL, CONSTRAINT "UQ_ae4578dcaed5adff96595e61660" UNIQUE ("name"), CONSTRAINT "PK_b36bcfe02fc8de3c57a8b2391c2" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."permission_code_enum" AS ENUM('CREATE_USERS', 'READ_USERS', 'UPDATE_USERS', 'DELETE_USERS', 'CREATE_ROLES', 'READ_ROLES', 'UPDATE_ROLES', 'DELETE_ROLES')`);
         await queryRunner.query(`CREATE TABLE "permission" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "code" "public"."permission_code_enum" NOT NULL, "description" character varying(255), "groupId" uuid, CONSTRAINT "PK_3b8b97af9d9d8807e41e6f48362" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "role" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(255) NOT NULL, "description" character varying(255), CONSTRAINT "UQ_ae4578dcaed5adff96595e61660" UNIQUE ("name"), CONSTRAINT "PK_b36bcfe02fc8de3c57a8b2391c2" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "role_permissions_permission" ("roleId" uuid NOT NULL, "permissionId" uuid NOT NULL, CONSTRAINT "PK_b817d7eca3b85f22130861259dd" PRIMARY KEY ("roleId", "permissionId"))`);
         await queryRunner.query(`CREATE INDEX "IDX_b36cb2e04bc353ca4ede00d87b" ON "role_permissions_permission" ("roleId") `);
         await queryRunner.query(`CREATE INDEX "IDX_bfbc9e263d4cea6d7a8c9eb3ad" ON "role_permissions_permission" ("permissionId") `);
@@ -27,9 +27,9 @@ export class CreateRolesAndPermissions1696964261070 implements MigrationInterfac
         await queryRunner.query(`DROP INDEX "public"."IDX_bfbc9e263d4cea6d7a8c9eb3ad"`);
         await queryRunner.query(`DROP INDEX "public"."IDX_b36cb2e04bc353ca4ede00d87b"`);
         await queryRunner.query(`DROP TABLE "role_permissions_permission"`);
+        await queryRunner.query(`DROP TABLE "role"`);
         await queryRunner.query(`DROP TABLE "permission"`);
         await queryRunner.query(`DROP TYPE "public"."permission_code_enum"`);
-        await queryRunner.query(`DROP TABLE "role"`);
         await queryRunner.query(`DROP TABLE "permission_group"`);
     }
 
