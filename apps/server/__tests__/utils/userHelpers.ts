@@ -23,7 +23,7 @@ export interface TestUserProps {
  */
 export const createTestUser = async ({ user, permissions }: TestUserProps = {}) => {
     const userRepo = AppDataSource.getRepository(UserEntity);
-    const roleEntity = permissions ? await createTestRole({ permissions }) : await getRootRole();
+    const roleEntity = permissions ? await createTestRole({ name: user?.username && `${user.username}Role`, permissions }) : await getRootRole();
 
     const userEntity = createUserEntity({
         username: user?.username || 'testUser',

@@ -6,6 +6,7 @@ import { UserEntity } from '../../src/entities/user';
 import { getRootRole } from '../utils/roleHelpers';
 import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 import { createTestUser } from '../utils/userHelpers';
+import { ALL_PERMISSIONS } from '../../src/models/permissions';
 
 let server: Server;
 
@@ -38,6 +39,38 @@ describe('Users routes', () => {
 
         expect(res.statusCode).toEqual(200);
         expect(res.text).toEqual(user.id);
+    });
+
+    test('User creation fails if unauthenticated', async () =>  {
+        const userPayload = {
+            username: 'fakeUser',
+            email: 'fakeUser@gmail.com'
+        };
+
+        const unauthenticatedRes = await request(server).post('/api/users').send(userPayload);
+        expect(unauthenticatedRes.statusCode).toEqual(401);
+    });
+
+    test('User creation fails if unauthorized', async () =>  {
+        const userPayload = {
+            username: 'fakeUser',
+            email: 'fakeUser@gmail.com'
+        };
+
+        const noPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+            permissions: []
+        });
+
+        const noPermissionRes = await noPermissionAgent.post('/api/users').send(userPayload);
+        expect(noPermissionRes.statusCode).toEqual(403);
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'create:user')
+        });
+        const lowPermissionRes = await lowPermissionAgent.post('/api/users').send(userPayload);
+        expect(lowPermissionRes.statusCode).toEqual(403);
     });
 
     test('User creation fails if query body is invalid', async () => {
@@ -131,10 +164,50 @@ describe('Users routes', () => {
         expect(res3.body).toHaveLength(1);
     });
 
+    test('Get users list fails if unauthenticated', async () => {
+        const res = await request(server).get('/api/users');
+
+        expect(res.statusCode).toEqual(401);
+    });
+
+    test('Get users list fails if unauthorized', async () => {
+        const noPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+            permissions: []
+        });
+
+        const noPermissionRes = await noPermissionAgent.get('/api/users');
+        expect(noPermissionRes.statusCode).toEqual(403);
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:user')
+        });
+        const lowPermissionRes = await lowPermissionAgent.get('/api/users');
+        expect(lowPermissionRes.statusCode).toEqual(403);
+    });
+
     test('User deletion fails if unauthenticated', async () => {
         const res = await request(server).delete('/api/users/fakeUserId');
 
         expect(res.statusCode).toEqual(401);
+    });
+
+    test('User deletion fails if unauthorized', async () => {
+        const noPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+            permissions: []
+        });
+
+        const noPermissionRes = await noPermissionAgent.delete('/api/users/fakeUserId');
+        expect(noPermissionRes.statusCode).toEqual(403);
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'delete:user')
+        });
+        const lowPermissionRes = await lowPermissionAgent.delete('/api/users/fakeUserId');
+        expect(lowPermissionRes.statusCode).toEqual(403);
     });
 
     test('User deletion fails if user doesn\'t exist', async () => {

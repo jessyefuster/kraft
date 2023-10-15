@@ -5,6 +5,7 @@ import { AppDataSource } from '../../src/data-source';
 import { RoleEntity } from '../../src/entities/role';
 import { createTestRole } from '../utils/roleHelpers';
 import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
+import { ALL_PERMISSIONS } from '../../src/models/permissions';
 
 let server: Server;
 
@@ -49,6 +50,23 @@ describe('Roles routes', () => {
         const res = await request(server).get('/api/roles');
 
         expect(res.statusCode).toEqual(401);
+    });
+
+    test('Get roles fails if unauthorized', async () =>  {
+        const noPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+            permissions: []
+        });
+
+        const noPermissionRes = await noPermissionAgent.get('/api/roles');
+        expect(noPermissionRes.statusCode).toEqual(403);
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:role')
+        });
+        const lowPermissionRes = await lowPermissionAgent.get('/api/roles');
+        expect(lowPermissionRes.statusCode).toEqual(403);
     });
 
 });
