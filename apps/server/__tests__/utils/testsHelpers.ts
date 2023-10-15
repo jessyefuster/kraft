@@ -55,8 +55,12 @@ export const closeDatabase = async () => {
  * Clear the database data.
  */
 export const clearDatabase = async () => {
-    const entities = AppDataSource.entityMetadatas.map((entity) => `"${entity.tableName}"`).join(', ');
-    await AppDataSource.query(`TRUNCATE ${entities} CASCADE;`);
+    const tables = AppDataSource.entityMetadatas.map((entity) => entity.tableName);
+    const tablesToDelete = tables.filter(table => !['role', 'permission', 'permission_group', 'role_permissions_permission'].includes(table));
+    const tablesToDeleteNamesQuery = tablesToDelete.map(table => `"${table}"`).join(',');
+
+    await AppDataSource.query(`TRUNCATE ${tablesToDeleteNamesQuery} CASCADE;`);
+    await AppDataSource.query('DELETE FROM "role" WHERE "isRoot" IS FALSE');
 };
 
 /**
