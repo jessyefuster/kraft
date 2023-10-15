@@ -11,7 +11,6 @@ import {
 
 import { PermissionEntity } from './permission';
 
-// TODO: editable column
 @Entity({ name: 'role' })
 export class RoleEntity {
     @PrimaryGeneratedColumn('uuid')
@@ -22,6 +21,9 @@ export class RoleEntity {
 
     @Column({ type: 'varchar', nullable: true, length: 255 })
     description!: string | null;
+
+    @Column({ type: 'boolean', default: false })
+    isRoot!: boolean;
 
     @ManyToMany(() => PermissionEntity, (permission) => permission.roles, {
         onDelete: 'CASCADE'

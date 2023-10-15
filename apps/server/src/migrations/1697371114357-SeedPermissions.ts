@@ -22,7 +22,7 @@ interface Role {
 }
 
 const GROUP_CODES = ['ROLES', 'USERS'] as const;
-const PERMISSION_CODES = ['CREATE_USERS', 'READ_USERS', 'UPDATE_USERS', 'DELETE_USERS', 'CREATE_ROLES', 'READ_ROLES', 'UPDATE_ROLES', 'DELETE_ROLES'] as const;
+const PERMISSION_CODES = ['create:user', 'read:user', 'update:user', 'delete:user', 'create:role', 'read:role', 'update:role', 'delete:role'] as const;
 
 type GroupCode = typeof GROUP_CODES[number];
 type PermissionCode = typeof PERMISSION_CODES[number];
@@ -30,11 +30,12 @@ type PermissionCode = typeof PERMISSION_CODES[number];
 const GROUP_CODES_VALUES_QUERY = GROUP_CODES.map(code => `'${code}'`).join(',');
 const PERMISSION_CODES_VALUES_QUERY = PERMISSION_CODES.map(code => `'${code}'`).join(',');
 
-export class SeedPermissions1697280275056 implements MigrationInterface {
+export class SeedPermissions1697371114357 implements MigrationInterface {
+    name = 'SeedPermissions1697371114357';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         // ADMIN ROLE
-        await queryRunner.query(`INSERT INTO "role" (name, description) VALUES ('Admin', 'Rôle de base, non modifiable')`);
+        await queryRunner.query(`INSERT INTO "role" ("name", "description", "isRoot") VALUES ('Admin', 'Rôle de base, non modifiable', true)`);
 
         // GROUPS
         const groupsRecord: Record<GroupCode, Group> = {
@@ -57,14 +58,14 @@ export class SeedPermissions1697280275056 implements MigrationInterface {
 
         // PERMISSIONS
         const permissionsRecord: Record<PermissionCode, Permission> = {
-            'CREATE_USERS': { code: 'CREATE_USERS', description: 'Créer des utilisateurs', groupId: usersGroup.id },
-            'READ_USERS': { code: 'READ_USERS', description: 'Voir les utilisateurs', groupId: usersGroup.id  },
-            'UPDATE_USERS': { code: 'UPDATE_USERS', description: 'Modifier les utilisateurs', groupId: usersGroup.id },
-            'DELETE_USERS': { code: 'DELETE_USERS', description: 'Supprimer des utilisateurs', groupId: usersGroup.id },
-            'CREATE_ROLES': { code: 'CREATE_ROLES', description: 'Créer des rôles', groupId: rolesGroup.id },
-            'READ_ROLES': { code: 'READ_ROLES', description: 'Voir les rôles', groupId: rolesGroup.id },
-            'UPDATE_ROLES': { code: 'UPDATE_ROLES', description: 'Modifier/attribuer des rôles', groupId: rolesGroup.id },
-            'DELETE_ROLES': { code: 'DELETE_ROLES', description: 'Supprimer des rôles', groupId: rolesGroup.id },
+            'create:user': { code: 'create:user', description: 'Créer des utilisateurs', groupId: usersGroup.id },
+            'read:user': { code: 'read:user', description: 'Voir les utilisateurs', groupId: usersGroup.id  },
+            'update:user': { code: 'update:user', description: 'Modifier les utilisateurs', groupId: usersGroup.id },
+            'delete:user': { code: 'delete:user', description: 'Supprimer des utilisateurs', groupId: usersGroup.id },
+            'create:role': { code: 'create:role', description: 'Créer des rôles', groupId: rolesGroup.id },
+            'read:role': { code: 'read:role', description: 'Voir les rôles', groupId: rolesGroup.id },
+            'update:role': { code: 'update:role', description: 'Modifier/attribuer des rôles', groupId: rolesGroup.id },
+            'delete:role': { code: 'delete:role', description: 'Supprimer des rôles', groupId: rolesGroup.id },
         };
         const permissions = Object.entries(permissionsRecord).map<Permission>(([key, value]) => ({ ...value, code: key }));
 
