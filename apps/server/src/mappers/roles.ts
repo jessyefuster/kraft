@@ -14,6 +14,7 @@ export class RoleMapper implements Mapper<Role> {
         return {
             id: roleEntity.id,
             name: roleEntity.name,
+            description: roleEntity.description ?? undefined,
             permissions: roleEntity.permissions?.map(entity => this.permissionMapper.fromEntity(entity))
         };
     }
@@ -35,6 +36,7 @@ export class RoleMapper implements Mapper<Role> {
         return {
             id: role.id || role.name,
             name: role.name,
+            description: role.description,
             permissions: role.permissions?.map(permission => this.permissionMapper.toDTO(permission))
         };
     }

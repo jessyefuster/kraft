@@ -8,12 +8,14 @@ import Table from '../../../components/ui/Table';
 const formatTable = (roles: RoleDTO[]) => {
   const columns: Column[] = [
     { title: 'Nom du rôle' },
+    { title: 'Description' },
     { title: 'Nombre de permissions', align: 'right' }
   ];
   const items = roles.map(role => ({
     key: role.id,
     data: {
       name: <AutoColoredChip labelStr={role.name} label={role.name} variant="outlined" />,
+      description: role.description,
       permissions: role.permissions?.length
     }
   }));

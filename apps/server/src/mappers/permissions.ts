@@ -14,7 +14,7 @@ export class PermissionMapper implements Mapper<Permission> {
         return {
             id: permissionEntity.id,
             code: permissionEntity.code,
-            description: permissionEntity.description || undefined,
+            description: permissionEntity.description ?? undefined,
             group: permissionEntity.group ? this.permissionGroupMapper.fromEntity(permissionEntity.group) : undefined
         };
     }
@@ -54,7 +54,7 @@ export class PermissionGroupMapper implements Mapper<PermissionGroup> {
         return {
             id: permissionGroupEntity.id,
             code: permissionGroupEntity.code,
-            description: permissionGroupEntity.description || undefined
+            description: permissionGroupEntity.description ?? undefined
         };
     }
 

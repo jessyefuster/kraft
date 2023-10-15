@@ -17,7 +17,7 @@ export class UserMapper implements Mapper<User> {
             updatedAt: userEntity.updatedAt,
             email: userEntity.email,
             username: userEntity.username,
-            deletedAt: userEntity.deletedAt || undefined,
+            deletedAt: userEntity.deletedAt ?? undefined,
             role: userEntity.role && this.roleMapper.fromEntity(userEntity.role)
         };
     }
