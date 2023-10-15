@@ -5,6 +5,6 @@ import { hasPermissions, isAuthenticated } from '../middlewares/auth';
 
 const router = express.Router();
 
-router.route('/').get(isAuthenticated, hasPermissions(['read:role']), RolesController.getAll);
+router.route('/').get(isAuthenticated, hasPermissions(['read:roles']), RolesController.getAll);
 
 export default router;

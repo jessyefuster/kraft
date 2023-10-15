@@ -22,7 +22,7 @@ interface Role {
 }
 
 const GROUP_CODES = ['ROLES', 'USERS'] as const;
-const PERMISSION_CODES = ['create:user', 'read:user', 'update:user', 'delete:user', 'create:role', 'read:role', 'update:role', 'delete:role'] as const;
+const PERMISSION_CODES = ['create:users', 'read:users', 'update:users', 'delete:users', 'create:roles', 'read:roles', 'update:roles', 'delete:roles'] as const;
 
 type GroupCode = typeof GROUP_CODES[number];
 type PermissionCode = typeof PERMISSION_CODES[number];
@@ -58,14 +58,14 @@ export class SeedPermissions1697371114357 implements MigrationInterface {
 
         // PERMISSIONS
         const permissionsRecord: Record<PermissionCode, Permission> = {
-            'create:user': { code: 'create:user', description: 'Créer des utilisateurs', groupId: usersGroup.id },
-            'read:user': { code: 'read:user', description: 'Voir les utilisateurs', groupId: usersGroup.id  },
-            'update:user': { code: 'update:user', description: 'Modifier les utilisateurs', groupId: usersGroup.id },
-            'delete:user': { code: 'delete:user', description: 'Supprimer des utilisateurs', groupId: usersGroup.id },
-            'create:role': { code: 'create:role', description: 'Créer des rôles', groupId: rolesGroup.id },
-            'read:role': { code: 'read:role', description: 'Voir les rôles', groupId: rolesGroup.id },
-            'update:role': { code: 'update:role', description: 'Modifier/attribuer des rôles', groupId: rolesGroup.id },
-            'delete:role': { code: 'delete:role', description: 'Supprimer des rôles', groupId: rolesGroup.id },
+            'create:users': { code: 'create:users', description: 'Créer des utilisateurs', groupId: usersGroup.id },
+            'read:users': { code: 'read:users', description: 'Voir les utilisateurs', groupId: usersGroup.id  },
+            'update:users': { code: 'update:users', description: 'Modifier les utilisateurs', groupId: usersGroup.id },
+            'delete:users': { code: 'delete:users', description: 'Supprimer des utilisateurs', groupId: usersGroup.id },
+            'create:roles': { code: 'create:roles', description: 'Créer des rôles', groupId: rolesGroup.id },
+            'read:roles': { code: 'read:roles', description: 'Voir les rôles', groupId: rolesGroup.id },
+            'update:roles': { code: 'update:roles', description: 'Modifier/attribuer des rôles', groupId: rolesGroup.id },
+            'delete:roles': { code: 'delete:roles', description: 'Supprimer des rôles', groupId: rolesGroup.id },
         };
         const permissions = Object.entries(permissionsRecord).map<Permission>(([key, value]) => ({ ...value, code: key }));
 

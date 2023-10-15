@@ -63,7 +63,7 @@ describe('Roles routes', () => {
 
         const lowPermissionAgent = await createAuthenticatedAgent(server, {
             user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
-            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:role')
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:roles')
         });
         const lowPermissionRes = await lowPermissionAgent.get('/api/roles');
         expect(lowPermissionRes.statusCode).toEqual(403);

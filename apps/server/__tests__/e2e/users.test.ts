@@ -67,7 +67,7 @@ describe('Users routes', () => {
 
         const lowPermissionAgent = await createAuthenticatedAgent(server, {
             user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
-            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'create:user')
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'create:users')
         });
         const lowPermissionRes = await lowPermissionAgent.post('/api/users').send(userPayload);
         expect(lowPermissionRes.statusCode).toEqual(403);
@@ -181,7 +181,7 @@ describe('Users routes', () => {
 
         const lowPermissionAgent = await createAuthenticatedAgent(server, {
             user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
-            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:user')
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:users')
         });
         const lowPermissionRes = await lowPermissionAgent.get('/api/users');
         expect(lowPermissionRes.statusCode).toEqual(403);
@@ -204,7 +204,7 @@ describe('Users routes', () => {
 
         const lowPermissionAgent = await createAuthenticatedAgent(server, {
             user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
-            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'delete:user')
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'delete:users')
         });
         const lowPermissionRes = await lowPermissionAgent.delete('/api/users/fakeUserId');
         expect(lowPermissionRes.statusCode).toEqual(403);

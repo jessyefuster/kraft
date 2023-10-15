@@ -12,8 +12,8 @@ export interface Permission {
     group?: PermissionGroup;
 }
 
-export const USERS_PERMISSIONS = ['create:user', 'read:user','update:user', 'delete:user'] as const;
-export const ROLES_PERMISSIONS = ['create:role', 'read:role','update:role', 'delete:role'] as const;
+export const USERS_PERMISSIONS = ['create:users', 'read:users','update:users', 'delete:users'] as const;
+export const ROLES_PERMISSIONS = ['create:roles', 'read:roles','update:roles', 'delete:roles'] as const;
 export const ALL_PERMISSIONS = [...USERS_PERMISSIONS, ...ROLES_PERMISSIONS] as const;
 
 export type UsersPermission = typeof USERS_PERMISSIONS[number];
