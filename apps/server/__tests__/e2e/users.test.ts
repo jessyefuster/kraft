@@ -3,7 +3,7 @@ import request from 'supertest';
 
 import { AppDataSource } from '../../src/data-source';
 import { UserEntity } from '../../src/entities/user';
-import { getDefaultRole } from '../utils/roleHelpers';
+import { getRootRole } from '../utils/roleHelpers';
 import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 import { createTestUser } from '../utils/userHelpers';
 
@@ -24,13 +24,14 @@ describe('Users routes', () => {
     });
 
     test('Create a user', async () => {
-        const defaultRole = await getDefaultRole();
+        const agent = await createAuthenticatedAgent(server);
+        const defaultRole = await getRootRole();
 
         const username = 'fakeUser';
         const email = 'fakeUser@gmail.com';
         const password = 'fakeUserPwd';
 
-        const res = await request(server).post('/api/users').send({ username, email, password, roleId: defaultRole.id });
+        const res = await agent.post('/api/users').send({ username, email, password, roleId: defaultRole.id });
 
         const userRepo = AppDataSource.getRepository(UserEntity);
         const user = await userRepo.findOneByOrFail({ username });
@@ -40,7 +41,8 @@ describe('Users routes', () => {
     });
 
     test('User creation fails if query body is invalid', async () => {
-        const defaultRole = await getDefaultRole();
+        const agent = await createAuthenticatedAgent(server);
+        const defaultRole = await getRootRole();
 
         const username = 'fakeUser';
         const email = 'fakeUser@gmail.com';
@@ -48,56 +50,57 @@ describe('Users routes', () => {
         const roleId = defaultRole.id;
 
         // Missing username
-        const withoutUsernameRes = await request(server).post('/api/users').send({ email, password, roleId });
+        const withoutUsernameRes = await agent.post('/api/users').send({ email, password, roleId });
 
         expect(withoutUsernameRes.statusCode).toEqual(400);
 
         // Missing email
-        const withoutEmailRes = await request(server).post('/api/users').send({ username, password, roleId });
+        const withoutEmailRes = await agent.post('/api/users').send({ username, password, roleId });
 
         expect(withoutEmailRes.statusCode).toEqual(400);
 
         // Missing password
-        const withoutPasswordRes = await request(server).post('/api/users').send({ username, email, roleId });
+        const withoutPasswordRes = await agent.post('/api/users').send({ username, email, roleId });
 
         expect(withoutPasswordRes.statusCode).toEqual(400);
 
         // Missing role
-        const withoutRoleRes = await request(server).post('/api/users').send({ username, email, password });
+        const withoutRoleRes = await agent.post('/api/users').send({ username, email, password });
 
         expect(withoutRoleRes.statusCode).toEqual(400);
 
         // Username have less that 5 characters
-        const invalidUsernameRes = await request(server).post('/api/users').send({ username: 'fake', email, password });
+        const invalidUsernameRes = await agent.post('/api/users').send({ username: 'fake', email, password });
 
         expect(invalidUsernameRes.statusCode).toEqual(400);
 
         // Email is invalid
-        const invalidEmailRes = await request(server).post('/api/users').send({ username, email: 'fake', password });
+        const invalidEmailRes = await agent.post('/api/users').send({ username, email: 'fake', password });
 
         expect(invalidEmailRes.statusCode).toEqual(400);
 
         // Password have less that 8 characters
-        const invalidPasswordRes = await request(server).post('/api/users').send({ username, email, password: 'fake' });
+        const invalidPasswordRes = await agent.post('/api/users').send({ username, email, password: 'fake' });
 
         expect(invalidPasswordRes.statusCode).toEqual(400);
 
         // Inexistent role
-        const invalidRoleRes = await request(server).post('/api/users').send({ username, email, password, roleId: 'fake' });
+        const invalidRoleRes = await agent.post('/api/users').send({ username, email, password, roleId: 'fake' });
 
         expect(invalidRoleRes.statusCode).toEqual(422);
     });
 
     test('User creation fails if username or email already exists', async () => {
-        const defaultRole = await getDefaultRole();
-        const { username, email } = await createTestUser();
+        const agent = await createAuthenticatedAgent(server);
+        const defaultRole = await getRootRole();
+        const { username, email } = await createTestUser({ user: { username: 'fakeUser', email: 'fakeEmail@gmail.com' } });
 
         // Username already existing
-        const conclictingUsernameRes = await request(server).post('/api/users').send({ username, email: 'otherEmail@gmail.com', password: 'password', roleId: defaultRole.id });
+        const conclictingUsernameRes = await agent.post('/api/users').send({ username, email: 'otherEmail@gmail.com', password: 'password', roleId: defaultRole.id });
         expect(conclictingUsernameRes.statusCode).toEqual(409);
 
         // Email already existing
-        const conclictingEmailRes = await request(server).post('/api/users').send({ username: 'otherUsername', email, password: 'password', roleId: defaultRole.id });
+        const conclictingEmailRes = await agent.post('/api/users').send({ username: 'otherUsername', email, password: 'password', roleId: defaultRole.id });
         expect(conclictingEmailRes.statusCode).toEqual(409);
     });
 
@@ -114,11 +117,7 @@ describe('Users routes', () => {
         expect(res1.statusCode).toEqual(200);
         expect(res1.body).toHaveLength(1);
 
-        const user = await createTestUser({
-            username: 'fakeUser',
-            password: 'fakeUserPwd',
-            email: 'fakeUser@gmail.com'
-        });
+        const user = await createTestUser({ user: { username: 'fakeUser', password: 'fakeUserPwd', email: 'fakeUser@gmail.com' } });
 
         const res2 = await agent.get('/api/users');
         expect(res2.statusCode).toEqual(200);
@@ -149,8 +148,8 @@ describe('Users routes', () => {
         const userRepo = AppDataSource.getRepository(UserEntity);
         const agent = await createAuthenticatedAgent(server);
         
-        await createTestUser({ username: 'fake1', password: 'password', email: 'fake1@gmail.com' });
-        const userToDelete = await createTestUser({ username: 'fake2', password: 'password', email: 'fake2@gmail.com' });
+        await createTestUser({ user: { username: 'fake1', password: 'password', email: 'fake1@gmail.com' } });
+        const userToDelete = await createTestUser({ user: { username: 'fake2', password: 'password', email: 'fake2@gmail.com' } });
 
         const usersCountBeforeDelete = await userRepo.count();
         

@@ -1,13 +1,19 @@
+import type { UsersCreateBody } from '@internal/types';
+
 import { AppDataSource } from '../../src/data-source';
 import { UserEntity } from '../../src/entities/user';
+import type { AnyPermission } from '../../src/models/permissions';
 import { createRole } from '../../src/services/roles';
 import { createUserEntity } from '../../src/services/user';
-import { getDefaultRole } from './roleHelpers';
+import { createTestRole, getRootRole } from './roleHelpers';
+
+export type UserProps = Partial<
+    Omit<UsersCreateBody, 'roleId'>
+>;
 
 export interface TestUserProps {
-    username?: string;
-    email?: string;
-    password?: string;
+    user?: UserProps;
+    permissions?: AnyPermission[];
 }
 
 /**
@@ -15,17 +21,18 @@ export interface TestUserProps {
  * @param testUser - User informations. Optional.
  * @returns 
  */
-export const createTestUser = async (testUser?: TestUserProps) => {
+export const createTestUser = async ({ user, permissions }: TestUserProps = {}) => {
     const userRepo = AppDataSource.getRepository(UserEntity);
+    const roleEntity = permissions ? await createTestRole({ permissions }) : await getRootRole();
 
-    const user = createUserEntity({
-        username: testUser?.username || 'testUser',
-        email: testUser?.email || 'testUser@gmail.com',
-        password: testUser?.password || 'password',
-        role: createRole(await getDefaultRole())
+    const userEntity = createUserEntity({
+        username: user?.username || 'testUser',
+        email: user?.email || 'testUser@gmail.com',
+        password: user?.password || 'password',
+        role: createRole(roleEntity)
     });
 
-    await userRepo.save(user);
+    await userRepo.save(userEntity);
 
-    return user;
+    return userEntity;
 };

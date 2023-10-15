@@ -1,3 +1,4 @@
+import type { PermissionEntity } from '../entities/permission';
 import { PermissionGroupMapper, PermissionMapper } from '../mappers/permissions';
 import type { Permission, PermissionGroup } from '../models/permissions';
 
@@ -19,4 +20,18 @@ export const createPermissionEntities = (permissions: Permission[]) => {
     const mapper = new PermissionMapper(groupMapper);
 
     return permissions.map(permission => mapper.toEntity(permission));
+};
+
+export const createPermissions = (entities: PermissionEntity[]) => {
+    const permissionGroupMapper = new PermissionGroupMapper();
+    const mapper = new PermissionMapper(permissionGroupMapper);
+
+    return entities.map(entity => mapper.fromEntity(entity));
+};
+
+export const createPermission = (entity: PermissionEntity) => {
+    const permissionGroupMapper = new PermissionGroupMapper();
+    const mapper = new PermissionMapper(permissionGroupMapper);
+
+    return mapper.fromEntity(entity);
 };
