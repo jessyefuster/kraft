@@ -13,4 +13,8 @@ export interface RolesCreateBody {
     permissionsIds?: Array<PermissionDTO['id']>;
 }
 
+export interface RolesDeleteParams {
+    id: string;
+}
+
 export type RolesListResponse = Array<RoleDTO>;
