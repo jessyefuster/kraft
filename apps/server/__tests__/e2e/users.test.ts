@@ -3,10 +3,10 @@ import request from 'supertest';
 
 import { AppDataSource } from '../../src/data-source';
 import { UserEntity } from '../../src/entities/user';
+import { ALL_PERMISSIONS } from '../../src/models/permissions';
 import { getRootRole } from '../utils/roleHelpers';
 import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 import { createTestUser } from '../utils/userHelpers';
-import { ALL_PERMISSIONS } from '../../src/models/permissions';
 
 let server: Server;
 
@@ -162,6 +162,28 @@ describe('Users routes', () => {
         const res3 = await agent.get('/api/users');
         expect(res3.statusCode).toEqual(200);
         expect(res3.body).toHaveLength(1);
+    });
+
+    test('Get users role if sufficient permissions', async () => {
+        const agent = await createAuthenticatedAgent(server);
+
+        const adminRes = await agent.get('/api/users');
+        expect(adminRes.statusCode).toEqual(200);
+        expect(adminRes.body).toHaveLength(1);
+        expect(adminRes.body).toEqual(expect.arrayContaining([
+            expect.objectContaining({ role: expect.anything() })
+        ]));
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:roles')
+        });
+
+        const lowPermissionRes = await lowPermissionAgent.get('/api/users');
+        expect(lowPermissionRes.statusCode).toEqual(200);
+        expect(lowPermissionRes.body).not.toContainEqual(expect.objectContaining({
+            role: expect.anything()
+        }));
     });
 
     test('Get users list fails if unauthenticated', async () => {

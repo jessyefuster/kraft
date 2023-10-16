@@ -2,7 +2,9 @@ import type { UserEntity } from '../entities/user';
 import { PermissionGroupMapper, PermissionMapper } from '../mappers/permissions';
 import { RoleMapper } from '../mappers/roles';
 import { UserMapper } from '../mappers/user';
+import type { AnyPermission } from '../models/permissions';
 import type { User } from '../models/users';
+import { roleHasPermissions } from './roles';
 
 export const createUserEntity = (user: User) => {
     const permissionGroupMapper = new PermissionGroupMapper();
@@ -32,4 +34,10 @@ export const createUserDTOFromEntity = (userEntity: UserEntity) => {
     const userDTO = mapper.toDTO(user);
 
     return userDTO;
+};
+
+export const userHasPermissions = (user: User, permissions: AnyPermission[]) => {
+    const userRole = user.role;
+
+    return userRole && roleHasPermissions(userRole, permissions);
 };

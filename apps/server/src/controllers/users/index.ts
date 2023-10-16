@@ -6,7 +6,7 @@ import { AppDataSource } from '../../data-source';
 import { RoleEntity } from '../../entities/role';
 import { UserEntity } from '../../entities/user';
 import { createRole } from '../../services/roles';
-import { createUserDTOFromEntity, createUserEntity } from '../../services/user';
+import { createUserDTOFromEntity, createUserEntity, userHasPermissions } from '../../services/user';
 import { validateCreateBody, validateDeleteParams } from './validators';
 
 const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response) => {
@@ -67,8 +67,9 @@ const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response) => 
 };
 
 const getAll = async (req: Request, res: Response<UsersListResponse>) => {
+    const appendRole = req.user && userHasPermissions(req.user, ['read:roles']);
     const userRepo = AppDataSource.getRepository(UserEntity);
-    const usersEntities = await userRepo.find({ relations: { role: true } });
+    const usersEntities = await userRepo.find({ relations: { role: appendRole } });
 
     const users = usersEntities.map(entity => createUserDTOFromEntity(entity));
 
