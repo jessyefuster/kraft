@@ -6,6 +6,7 @@ import { hasPermissions, isAuthenticated } from '../middlewares/auth';
 const router = express.Router();
 
 router.route('/:id').delete(isAuthenticated, hasPermissions(['delete:roles']), RolesController.deleteOne);
+router.route('/').post(isAuthenticated, hasPermissions(['create:roles']), RolesController.createOne);
 router.route('/').get(isAuthenticated, hasPermissions(['read:roles']), RolesController.getAll);
 
 export default router;

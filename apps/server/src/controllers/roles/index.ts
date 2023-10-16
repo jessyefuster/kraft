@@ -1,12 +1,17 @@
-import type { RolesListResponse } from '@internal/types';
+import type { RolesCreateBody, RolesCreateResponse, RolesListResponse } from '@internal/types';
 import type { Request, Response } from 'express';
 import createHttpError from 'http-errors';
+import { In } from 'typeorm';
 
 import { AppDataSource } from '../../data-source';
+import { PermissionEntity } from '../../entities/permission';
 import { RoleEntity } from '../../entities/role';
 import { PermissionGroupMapper, PermissionMapper } from '../../mappers/permissions';
 import { RoleMapper } from '../../mappers/roles';
-import { validateDeleteParams } from './validators';
+import type { Permission } from '../../models/permissions';
+import { createPermissions } from '../../services/permissions';
+import { createRoleDTOFromEntity, createRoleEntity } from '../../services/roles';
+import { validateCreateBody, validateDeleteParams } from './validators';
 
 const getAll = async (req: Request, res: Response<RolesListResponse>) => {
     const roleRepo = AppDataSource.getRepository(RoleEntity);
@@ -36,7 +41,41 @@ const deleteOne = async (req: Request, res: Response) => {
     res.status(204).send();
 };
 
+const createOne = async (req: TypedRequestBody<RolesCreateBody>, res: Response<RolesCreateResponse>) => {
+    const { name, description, permissionsIds } = validateCreateBody(req.body);
+
+    const roleRepo = AppDataSource.getRepository(RoleEntity);
+    const roleExists = await roleRepo.exist({
+        where: { name }
+    });
+    if (roleExists) {
+        throw createHttpError(409, 'Role already exists');
+    }
+    
+    let permissions: Permission[] = [];
+
+    if (permissionsIds?.length) {
+        const permissionRepo = AppDataSource.getRepository(PermissionEntity);
+        const permissionEntities = await permissionRepo.findBy({ id: In(permissionsIds) });
+        if (permissionEntities.length !== permissionsIds.length) {
+            throw createHttpError(422, 'Cannot find permission');
+        }
+        permissions = createPermissions(permissionEntities);
+    }
+
+    const newRole = createRoleEntity({
+        name,
+        description,
+        permissions
+    });
+
+    await roleRepo.save(newRole);
+
+    res.send(createRoleDTOFromEntity(newRole));
+};
+
 export default {
     getAll,
-    deleteOne
+    deleteOne,
+    createOne
 };

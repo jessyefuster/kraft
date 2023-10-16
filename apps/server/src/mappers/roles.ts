@@ -25,6 +25,9 @@ export class RoleMapper implements Mapper<Role> {
         if (role.id) {
             entity.id = role.id;
         }
+        if (role.description) {
+            entity.description = role.description;
+        }
 
         entity.name = role.name;
         entity.permissions = role.permissions?.map(permission => this.permissionMapper.toEntity(permission));

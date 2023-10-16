@@ -20,6 +20,17 @@ export const createRole = (roleEntity: RoleEntity) => {
     return mapper.fromEntity(roleEntity);
 };
 
+export const createRoleDTOFromEntity = (roleEntity: RoleEntity) => {
+    const permissionGroupMapper = new PermissionGroupMapper();
+    const permissionMapper = new PermissionMapper(permissionGroupMapper);
+    const mapper = new RoleMapper(permissionMapper);
+
+    const role = mapper.fromEntity(roleEntity);
+    const roleDTO = mapper.toDTO(role);
+
+    return roleDTO;
+};
+
 export const roleHasPermissions = (role: Role, permissions: AnyPermission[]) => {
     const rolePermissions = role.permissions || [];
 
