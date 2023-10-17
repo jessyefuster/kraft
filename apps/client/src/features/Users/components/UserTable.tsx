@@ -1,110 +1,72 @@
 import type { UserDTO } from '@internal/types';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
-import { useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useDeleteUserMutation } from '../../../app/api';
 import AutoColoredChip from '../../../components/ui/AutoColoredChip';
+import type { Props as ButtonWithConfirmDialogProps } from '../../../components/ui/ButtonWithConfirmDialog';
+import ButtonWithConfirmDialog from '../../../components/ui/ButtonWithConfirmDialog';
 import type { Column } from '../../../components/ui/Table';
 import Table from '../../../components/ui/Table';
-
-const formatTable = (users: UserDTO[], onDeleteClick: (id: UserDTO['id']) => void) => {
-  const columns: Column[] = [
-    { title: undefined, 'aria-label': 'Avatar' },
-    { title: 'Nom d\'utilisateur' },
-    { title: 'E-mail' },
-    { title: 'Rôle' },
-    { title: 'Date de création', align: 'right' },
-    { title: 'Actions', align: 'right' }
-  ];
-  const items = users.map(user => ({
-    key: user.id,
-    data: {
-      avatar: <Avatar>{user.username[0].toUpperCase()}</Avatar>,
-      username: user.username,
-      email: user.email,
-      role: user.role && <AutoColoredChip label={user.role.name} labelStr={user.role.name} onClick={() => {}} variant="outlined" />,
-      createdAt: user.createdAt,
-      actions: (
-        <DeleteUserButton onDeleteConfirm={() => onDeleteClick(user.id)} />
-      )
-    }
-  }));
-
-  return {
-    columns,
-    items
-  };
-};
 
 interface Props {
   users: UserDTO[];
 }
 
 const DeleteUserButton = ({ onDeleteConfirm }: { onDeleteConfirm: () => void }) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
-
-  const handleDialogClose = (confirm?: boolean) => {
-    setDialogOpen(false);
-
-    if (confirm) {
-      onDeleteConfirm();
-    }
-  };
-
-  const handleClickOpen = () => {
-    setDialogOpen(true);
-  };
+  const dialogOptions = useMemo<ButtonWithConfirmDialogProps['dialogOptions']>(() => ({
+    title: "Supprimer l'utilisateur ?",
+    description: "En supprimant l'utilisateur, le compte et ses actions associées seront définitivement perdues.",
+    confirmText: 'Supprimer',
+    confirmType: 'destructive'
+  }), []);
 
   return (
-    <>
-      <IconButton aria-label="Delete user" onClick={handleClickOpen}>
-        <DeleteIcon />
-      </IconButton>
-      <Dialog
-        open={dialogOpen}
-        onClose={() => handleDialogClose()}
-        aria-labelledby="delete-user-alert-dialog-title"
-        aria-describedby="delete-user-alert-dialog-description"
-      >
-        <DialogTitle id="delete-user-alert-dialog-title">{"Supprimer l'utilisateur ?"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {"En supprimant l'utilisateur, le compte et ses actions associées seront définitivement perdues."}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => handleDialogClose()}>Retour</Button>
-          <Button
-            onClick={() => handleDialogClose(true)}
-            color="error"
-          >
-            Supprimer
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+    <ButtonWithConfirmDialog
+      icon={useMemo(() => <DeleteIcon />, [])}
+      dialogOptions={dialogOptions}
+      onConfirm={onDeleteConfirm}
+    />
   );
 };
 
 const UserTable = ({ users }: Props) => {
   const [deleteUser] = useDeleteUserMutation();
+  const onDeleteUserConfirm = useCallback((userId: string) => deleteUser(userId), [deleteUser]);
 
-  const onDeleteClick = async (id: UserDTO['id']) => {
-    await deleteUser(id);
-  };
+  const table = useMemo(() => {
+    const columns: Column[] = [
+      { title: undefined, 'aria-label': 'Avatar' },
+      { title: 'Nom d\'utilisateur' },
+      { title: 'E-mail' },
+      { title: 'Rôle' },
+      { title: 'Date de création', align: 'right' },
+      { title: 'Actions', align: 'right' }
+    ];
+    const items = users.map(user => ({
+      key: user.id,
+      data: {
+        avatar: <Avatar>{user.username[0].toUpperCase()}</Avatar>,
+        username: user.username,
+        email: user.email,
+        role: user.role && <AutoColoredChip label={user.role.name} labelStr={user.role.name} variant="outlined" />,
+        createdAt: user.createdAt,
+        // eslint-disable-next-line @arthurgeron/react-usememo/require-usememo
+        actions: <DeleteUserButton onDeleteConfirm={() => onDeleteUserConfirm(user.id)} />
+      }
+    }));
+  
+    return {
+      columns,
+      items
+    };
+  }, [users, onDeleteUserConfirm]);
 
   return (
     <Table
       label="Liste des utilisateurs"
-      {...formatTable(users, (id) => onDeleteClick(id))}
+      {...table}
     />
   );
 };
