@@ -1,9 +1,9 @@
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { Box, Button, styled } from '@mui/material';
+import { Box, styled } from '@mui/material';
 import Typography from '@mui/material/Typography';
 
 import { useGetRolesQuery } from '../../../app/api';
 import Page from '../../../components/layout/Page';
+import CreateRoleButton from '../components/CreateRoleButton';
 import RoleTable from '../components/RoleTable';
 
 const Header = styled(Box)({
@@ -24,7 +24,7 @@ const RolesPage = ({ title }: Props) => {
       <Box padding={4}>
         <Header>
           <Typography variant="h4">{title}</Typography>
-          <Button variant="contained" startIcon={<AddCircleOutlineIcon />}>Nouveau rôle</Button>
+          <CreateRoleButton />
         </Header>
         {roles && <RoleTable roles={roles} />}
       </Box>

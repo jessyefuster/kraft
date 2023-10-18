@@ -1,14 +1,26 @@
 
+import LoadingButton from '@mui/lab/LoadingButton';
+import { styled } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+
 import Form from '../../../components/forms/Form';
 import TextInput from '../../../components/forms/TextInput';
 import { useCreateRoleForm } from '../hooks/useCreateRoleForm';
 
-const CreateRoleForm = () => {
-  const { form, requiredFields, isLoading, submitHandler } = useCreateRoleForm();
+const ActionsContainer = styled(Box)({
+  display: 'flex',
+  justifyContent: 'end',
+  marginTop: '20px'
+});
 
-  const onSubmitSuccess = () => {
-    console.info('submit')
-  };
+interface Props {
+  onBackClick: () => void;
+  onSubmitSuccess: () => void;
+}
+
+const CreateRoleForm = ({ onBackClick, onSubmitSuccess }: Props) => {
+  const { form, requiredFields, isLoading, submitHandler } = useCreateRoleForm();
 
   return (
     <Form form={form} onSubmit={submitHandler} onSubmitSuccess={onSubmitSuccess}>
@@ -26,6 +38,17 @@ const CreateRoleForm = () => {
         required={requiredFields.description}
         sx={{ mt: 2 }}
       />
+      <ActionsContainer>
+        <Button onClick={onBackClick}>Retour</Button>
+        <LoadingButton
+          loading={isLoading}
+          type="submit"
+          variant="contained"
+          sx={{ ml: 2 }}
+        >
+          Valider
+        </LoadingButton>
+      </ActionsContainer>
     </Form>
   );
 };

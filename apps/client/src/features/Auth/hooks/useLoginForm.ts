@@ -1,8 +1,8 @@
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
+import { useCallback, useMemo } from 'react';
 
-import yup, { getRequiredFields } from '../../../lib/yup';
 import { useLogInMutation } from '../../../app/api';
+import { useYupForm } from '../../../hooks/useYupForm';
+import yup from '../../../lib/yup';
 
 export type LoginFormData = yup.InferType<typeof validationSchema>;
 
@@ -15,21 +15,21 @@ interface FormOptions {
   defaultValues?: LoginFormData;
 }
 
-export const useLoginForm = (options: FormOptions = {}) => {
-  const { defaultValues } = options;
-  const requiredFields = getRequiredFields(validationSchema);
+export const useLoginForm = ({ defaultValues }: FormOptions = {}) => {
   const [logIn, { isLoading }] = useLogInMutation();
+  const formConfig = useMemo(() => ({ validationSchema, defaultValues }), [defaultValues]);
+  const { form, requiredFields } = useYupForm<LoginFormData>(formConfig);
 
-  const submitHandler = (formValue: LoginFormData) => {
+  const submitHandler = useCallback((formValue: LoginFormData) => {
     const { username, password } = formValue;
 
     return logIn({ login: username, password }).unwrap();
-  };
+  }, [logIn]);
 
-  return {
-    form: useForm({ defaultValues, resolver: yupResolver(validationSchema) }),
+  return useMemo(() => ({
+    form,
     requiredFields,
     isLoading,
     submitHandler
-  };
+  }), [form, isLoading, requiredFields, submitHandler]);
 };
