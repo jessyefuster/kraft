@@ -1,35 +1,35 @@
-import { yupResolver } from '@hookform/resolvers/yup';
-import { useForm } from 'react-hook-form';
+import { useCallback, useMemo } from 'react';
 
 import { useCreateRoleMutation } from '../../../app/api';
-import yup, { getRequiredFields } from '../../../lib/yup';
-
-export type CreateRoleFormData = yup.InferType<typeof validationSchema>;
+import { useYupForm } from '../../../hooks/useYupForm';
+import yup from '../../../lib/yup';
 
 const validationSchema = yup.object({
   name: yup.string().required('Saisissez le nom du rôle'),
   description: yup.string(),
 });
 
+export type CreateRoleFormData = yup.InferType<typeof validationSchema>;
+
 interface FormOptions {
   defaultValues?: CreateRoleFormData;
 }
 
-export const useCreateRoleForm = (options: FormOptions = {}) => {
-  const { defaultValues } = options;
-  const requiredFields = getRequiredFields(validationSchema);
+export const useCreateRoleForm = ({ defaultValues }: FormOptions = {}) => {
   const [createRole, { isLoading }] = useCreateRoleMutation();
+  const formConfig = useMemo(() => ({ validationSchema, defaultValues }), [defaultValues]);
+  const { form, requiredFields } = useYupForm<CreateRoleFormData>(formConfig);
 
-  const submitHandler = (formValue: CreateRoleFormData) => {
+  const submitHandler = useCallback((formValue: CreateRoleFormData) => {
     const { name, description } = formValue;
 
     return createRole({ name, description }).unwrap();
-  };
+  }, [createRole]);
 
-  return {
-    form: useForm({ defaultValues, resolver: yupResolver(validationSchema) }),
+  return useMemo(() => ({
+    form,
     requiredFields,
     isLoading,
     submitHandler
-  };
+  }), [form, isLoading, requiredFields, submitHandler]);
 };
