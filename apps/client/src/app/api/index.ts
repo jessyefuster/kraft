@@ -1,7 +1,7 @@
 import type { AnyAction, AsyncThunk } from '@reduxjs/toolkit';
 import { isRejectedWithValue } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { AuthLoginBody, AuthLoginResponse, UserDTO, UsersListResponse, RolesListResponse, RoleDTO } from '@internal/types';
+import type { AuthLoginBody, AuthLoginResponse, UserDTO, UsersListResponse, RolesListResponse, RoleDTO, RolesCreateResponse, RolesCreateBody } from '@internal/types';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
@@ -50,6 +50,14 @@ export const api = createApi({
       }),
       invalidatesTags: ['Role']
     }),
+    createRole: builder.mutation<RolesCreateResponse, RolesCreateBody>({
+      query: (body) => ({
+        url: '/roles',
+        method: 'POST',
+        body
+      }),
+      invalidatesTags: ['Role']
+    }),
   })
 });
 
@@ -67,5 +75,6 @@ export const {
   useGetUsersQuery,
   useDeleteUserMutation,
   useGetRolesQuery,
-  useDeleteRoleMutation
+  useDeleteRoleMutation,
+  useCreateRoleMutation,
 } = api;
