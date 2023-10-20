@@ -71,7 +71,7 @@ const createOne = async (req: TypedRequestBody<RolesCreateBody>, res: Response<R
 
     await roleRepo.save(newRole);
 
-    res.send(createRoleDTOFromEntity(newRole));
+    res.status(201).send(createRoleDTOFromEntity(newRole));
 };
 
 export default {

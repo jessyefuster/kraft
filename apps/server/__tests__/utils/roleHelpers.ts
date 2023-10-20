@@ -21,7 +21,7 @@ export const getPermissions = async (codes: AnyPermission[]) => {
     const permissionEntities = await permissionsRepo.findBy({ code: In(codes) });
 
     return permissionEntities;
-}
+};
 
 /**
  * Create a role in database.
@@ -45,7 +45,7 @@ export const createTestRole = async (testRole?: TestRoleProps) => {
 export const getRole = async (name: string) => {
     const roleRepo = AppDataSource.getRepository(RoleEntity);
 
-    return await roleRepo.findOneBy({ name });
+    return await roleRepo.findOne({ where: { name }, relations: { permissions: true } });
 };
 
 export const getRootRole = async () => {

@@ -1,11 +1,12 @@
+import type { RolesCreateBody } from '@internal/types';
 import type { Server } from 'http';
 import request from 'supertest';
 
 import { AppDataSource } from '../../src/data-source';
 import { RoleEntity } from '../../src/entities/role';
-import { createTestRole } from '../utils/roleHelpers';
-import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 import { ALL_PERMISSIONS } from '../../src/models/permissions';
+import { createTestRole, getPermissions, getRole } from '../utils/roleHelpers';
+import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 
 let server: Server;
 
@@ -66,6 +67,71 @@ describe('Roles routes', () => {
             permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:roles')
         });
         const lowPermissionRes = await lowPermissionAgent.get('/api/roles');
+        expect(lowPermissionRes.statusCode).toEqual(403);
+    });
+
+    test('Create a role', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const permissionsEntities = await getPermissions(['read:users', 'delete:roles']);
+        const permissionsCount = permissionsEntities.length;
+        const permissionsIds = permissionsEntities.map(p => p.id);
+        const permissionsCodes = permissionsEntities.map(p => p.code);
+
+        const roleData: RolesCreateBody = {
+            name: 'Fake role',
+            description: 'Fake description'
+        };
+
+        const payload: RolesCreateBody = {
+            ...roleData,
+            permissionsIds
+        };
+
+        const res = await agent.post('/api/roles').send(payload);
+        const roleEntity = await getRole(roleData.name);
+
+        expect(res.statusCode).toEqual(201);
+        expect(roleEntity).not.toBeNull();
+
+        expect(res.body).toMatchObject({ ...roleData, permissions: expect.any(Array) });
+        expect(roleEntity).toMatchObject({ ...roleData, permissions: expect.any(Array), isRoot: false });
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const resPermissions = res.body.permissions as any[];
+        expect(resPermissions).toHaveLength(permissionsCount);
+
+        for (const permissionCode of permissionsCodes) {
+            expect(resPermissions).toContainEqual(expect.objectContaining({ code: permissionCode }));
+        }
+
+        const roleEntityPermissions = roleEntity!.permissions;
+        expect(roleEntityPermissions).toHaveLength(permissionsCount);
+
+        for (const permissionCode of permissionsCodes) {
+            expect(roleEntityPermissions).toContainEqual(expect.objectContaining({ code: permissionCode }));
+        }
+    });
+
+    test('Role creation fails if unauthenticated', async () => {
+        const res = await request(server).post('/api/roles');
+
+        expect(res.statusCode).toEqual(401);
+    });
+
+    test('Role creation fails if unauthorized', async () =>  {
+        const noPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+            permissions: []
+        });
+
+        const noPermissionRes = await noPermissionAgent.post('/api/roles');
+        expect(noPermissionRes.statusCode).toEqual(403);
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'create:roles')
+        });
+        const lowPermissionRes = await lowPermissionAgent.post('/api/roles');
         expect(lowPermissionRes.statusCode).toEqual(403);
     });
 
