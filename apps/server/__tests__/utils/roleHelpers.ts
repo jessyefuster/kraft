@@ -28,14 +28,16 @@ export const getPermissions = async (codes: AnyPermission[]) => {
  * @param testRole - Role informations. Optional.
  * @returns 
  */
-export const createTestRole = async (testRole?: TestRoleProps) => {
+export const createTestRole = async (testRole?: TestRoleProps, isRoot: boolean = false) => {
     const permissions = testRole?.permissions || [];
     const roleRepo = AppDataSource.getRepository(RoleEntity);
 
     const roleEntity = createRoleEntity({
         name: testRole?.name || DEFAULT_ROLE_NAME,
-        permissions: permissions.length ? createPermissions(await getPermissions(permissions)) : undefined
+        permissions: permissions.length ? createPermissions(await getPermissions(permissions)) : undefined,
     });
+
+    roleEntity.isRoot = isRoot;
 
     await roleRepo.save(roleEntity);
 

@@ -36,6 +36,10 @@ const deleteOne = async (req: Request, res: Response) => {
         throw createHttpError(404, 'Cannot find role');
     }
 
+    if (roleEntity.isRoot) {
+        throw createHttpError(403, 'Cannot delete root role');
+    }
+
     await roleRepo.remove(roleEntity);
 
     res.status(204).send();

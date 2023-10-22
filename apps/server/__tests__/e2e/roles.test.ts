@@ -5,7 +5,7 @@ import request from 'supertest';
 import { AppDataSource } from '../../src/data-source';
 import { RoleEntity } from '../../src/entities/role';
 import { ALL_PERMISSIONS } from '../../src/models/permissions';
-import { createTestRole, getPermissions, getRole } from '../utils/roleHelpers';
+import { createTestRole, getPermissions, getRole, getRootRole } from '../utils/roleHelpers';
 import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 
 let server: Server;
@@ -112,6 +112,41 @@ describe('Roles routes', () => {
         }
     });
 
+    test('Role fails if query body is invalid', async () => {
+        const agent = await createAuthenticatedAgent(server);
+
+        const res = await agent.post('/api/roles').send({ description: 'I dont have a name' });
+
+        expect(res.statusCode).toEqual(400);
+    });
+
+    test('Role creation fails if role already exists', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const rootRoleEntity = await getRootRole();
+
+        const payload: RolesCreateBody = {
+            name: rootRoleEntity.name
+        };
+
+        const res = await agent.post('/api/roles').send(payload);
+
+        expect(res.statusCode).toEqual(409);
+    });
+
+    test('Role creation fails if non-existent permissions', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const [permissionEntity] = await getPermissions(['read:users']);
+
+        const payload: RolesCreateBody = {
+            name: 'testRole',
+            permissionsIds: [permissionEntity.id, 'fakeId']
+        };
+
+        const res = await agent.post('/api/roles').send(payload);
+
+        expect(res.statusCode).toEqual(422);
+    });
+    
     test('Role creation fails if unauthenticated', async () => {
         const res = await request(server).post('/api/roles');
 
@@ -135,4 +170,56 @@ describe('Roles routes', () => {
         expect(lowPermissionRes.statusCode).toEqual(403);
     });
 
+    test('Delete a role', async () => {
+        const agent = await createAuthenticatedAgent(server);
+
+        const roleEntity = await createTestRole({
+            name: 'fakeRole'
+        });
+
+        const res = await agent.delete(`/api/roles/${roleEntity.id}`);
+        const repoRoleEntity = await getRole(roleEntity.name);
+        
+        expect(res.statusCode).toEqual(204);
+        expect(repoRoleEntity).toBeNull();
+    });
+
+    test('Role deletion fails if role doesn\'t exist', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const res = await agent.delete('/api/roles/fakeRoleId');
+
+        expect(res.statusCode).toEqual(404);
+    });
+
+    test('Role deletion fails if role is root', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const rootRoleEntity = await createTestRole({ name: 'fakeRootRole' }, true);
+
+        const res = await agent.delete(`/api/roles/${rootRoleEntity.id}`);
+
+        expect(res.statusCode).toEqual(403);
+    });
+
+    test('Role deletion fails if unauthenticated', async () => {
+        const res = await request(server).delete('/api/roles/fakeRoleId');
+
+        expect(res.statusCode).toEqual(401);
+    });
+
+    test('Role deletion fails if unauthorized', async () =>  {
+        const noPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+            permissions: []
+        });
+
+        const noPermissionRes = await noPermissionAgent.delete('/api/roles/fakeRoleId');
+        expect(noPermissionRes.statusCode).toEqual(403);
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'delete:roles')
+        });
+        const lowPermissionRes = await lowPermissionAgent.delete('/api/roles/fakeRoleId');
+        expect(lowPermissionRes.statusCode).toEqual(403);
+    });
 });
