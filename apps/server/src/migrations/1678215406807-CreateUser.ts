@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateUser1678215406807 implements MigrationInterface {
     name = 'CreateUser1678215406807'

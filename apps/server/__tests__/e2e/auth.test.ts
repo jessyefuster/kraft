@@ -2,7 +2,7 @@ import type { Server } from 'http';
 import request from 'supertest';
 
 import { AppDataSource } from '../../src/data-source';
-import { User } from '../../src/entities/user';
+import { UserEntity } from '../../src/entities/user';
 import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 import { createTestUser } from '../utils/userHelpers';
 
@@ -18,14 +18,14 @@ afterAll(async () => {
 });
 
 describe('Auth routes', () => {
-    afterEach(async () => {
+    beforeEach(async () => {
         await clearDatabase();
     });
 
     test('Log user by username', async () => {
         const username = 'fakeUser';
         const password = 'fakeUserPwd';
-        const user = await createTestUser({ username, password });
+        const user = await createTestUser({ user: { username, password } });
 
         const res = await request(server).post('/api/auth/login').send({ login: username, password });
         
@@ -41,7 +41,7 @@ describe('Auth routes', () => {
     test('Log user by email', async () => {
         const email = 'fakeUser@gmail.com';
         const password = 'fakeUserPwd';
-        const user = await createTestUser({ email, password });
+        const user = await createTestUser({ user: { email, password } });
 
         const res = await request(server).post('/api/auth/login').send({ login: email, password });
         
@@ -57,7 +57,7 @@ describe('Auth routes', () => {
     test('Login fails if wrong credentials', async () => {
         const username = 'fakeUser';
         const password = 'fakeUserPwd';
-        await createTestUser({ username, password });
+        await createTestUser({ user: { username, password } });
 
         // Wrong login
         const res1 = await request(server).post('/api/auth/login').send({ login: 'wrongLogin', password });
@@ -89,7 +89,7 @@ describe('Auth routes', () => {
     test('Throw an error if authenticated user tries to login', async () => {
         const username = 'fakeUser';
         const password = 'fakeUserPwd';
-        const agent = await createAuthenticatedAgent(server, { username, password });
+        const agent = await createAuthenticatedAgent(server, { user: { username, password } });
 
         const res = await agent.post('/api/auth/login').send({ login: username, password });
         expect(res.statusCode).toEqual(401);
@@ -114,7 +114,7 @@ describe('Auth routes', () => {
 
         const username = 'fakeUser';
         const password = 'fakeUserPwd';
-        await createTestUser({ username, password });
+        await createTestUser({ user: { username, password } });
 
         const res = await request(serverFailingLogIn).post('/api/auth/login').send({ login: username, password });
         
@@ -143,9 +143,9 @@ describe('Auth routes', () => {
 
     test('Authenticated user is considered as non authenticated if user has been deleted', async () => {
         const username = 'fakeUser';
-        const agent = await createAuthenticatedAgent(server, { username });
+        const agent = await createAuthenticatedAgent(server, { user: { username } });
 
-        const repo = AppDataSource.getRepository(User);
+        const repo = AppDataSource.getRepository(UserEntity);
         await repo.delete({ username });
 
         const res = await agent.get('/api/auth/authenticated');

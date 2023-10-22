@@ -1,10 +1,13 @@
+import type { AuthLoginBody, AuthLoginResponse } from '@internal/types';
 import type { NextFunction, Request, Response } from 'express';
 import type { HttpError } from 'http-errors';
 import createHttpError from 'http-errors';
 import passport from 'passport';
-import type { AuthLoginBody, AuthLoginResponse } from '@internal/types';
 
-import type { User } from '../../entities/user';
+import { PermissionGroupMapper, PermissionMapper } from '../../mappers/permissions';
+import { RoleMapper } from '../../mappers/roles';
+import { UserMapper } from '../../mappers/user';
+import type { User } from '../../models/users';
 import { validateLoginBody } from './validators';
 
 const login = (
@@ -32,11 +35,12 @@ const login = (
                     return next(err);
                 }
 
-                return res.send({
-                    id: user.id,
-                    username: user.username,
-                    email: user.email,
-                });
+                const permissionGroupMapper = new PermissionGroupMapper();
+                const permissionMapper = new PermissionMapper(permissionGroupMapper);
+                const roleMapper = new RoleMapper(permissionMapper);
+                const userMapper = new UserMapper(roleMapper);
+
+                return res.send(userMapper.toDTO(user));
             });
         },
     )(req, res, next);

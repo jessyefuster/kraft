@@ -2,7 +2,9 @@ import type { Server } from 'http';
 import request from 'supertest';
 
 import { AppDataSource } from '../../src/data-source';
-import { User } from '../../src/entities/user';
+import { UserEntity } from '../../src/entities/user';
+import { ALL_PERMISSIONS } from '../../src/models/permissions';
+import { getRootRole } from '../utils/roleHelpers';
 import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 import { createTestUser } from '../utils/userHelpers';
 
@@ -18,78 +20,121 @@ afterAll(async () => {
 });
 
 describe('Users routes', () => {
-    afterEach(async () => {
+    beforeEach(async () => {
         await clearDatabase();
     });
 
     test('Create a user', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const defaultRole = await getRootRole();
+
         const username = 'fakeUser';
         const email = 'fakeUser@gmail.com';
         const password = 'fakeUserPwd';
 
-        const res = await request(server).post('/api/users').send({ username, email, password });
+        const res = await agent.post('/api/users').send({ username, email, password, roleId: defaultRole.id });
 
-        const userRepo = AppDataSource.getRepository(User);
+        const userRepo = AppDataSource.getRepository(UserEntity);
         const user = await userRepo.findOneByOrFail({ username });
 
         expect(res.statusCode).toEqual(200);
         expect(res.text).toEqual(user.id);
     });
 
+    test('User creation fails if unauthenticated', async () =>  {
+        const userPayload = {
+            username: 'fakeUser',
+            email: 'fakeUser@gmail.com'
+        };
+
+        const unauthenticatedRes = await request(server).post('/api/users').send(userPayload);
+        expect(unauthenticatedRes.statusCode).toEqual(401);
+    });
+
+    test('User creation fails if unauthorized', async () =>  {
+        const userPayload = {
+            username: 'fakeUser',
+            email: 'fakeUser@gmail.com'
+        };
+
+        const noPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+            permissions: []
+        });
+
+        const noPermissionRes = await noPermissionAgent.post('/api/users').send(userPayload);
+        expect(noPermissionRes.statusCode).toEqual(403);
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'create:users')
+        });
+        const lowPermissionRes = await lowPermissionAgent.post('/api/users').send(userPayload);
+        expect(lowPermissionRes.statusCode).toEqual(403);
+    });
+
     test('User creation fails if query body is invalid', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const defaultRole = await getRootRole();
+
         const username = 'fakeUser';
         const email = 'fakeUser@gmail.com';
         const password = 'fakeUserPwd';
+        const roleId = defaultRole.id;
 
         // Missing username
-        const res1 = await request(server).post('/api/users').send({ email, password });
+        const withoutUsernameRes = await agent.post('/api/users').send({ email, password, roleId });
 
-        expect(res1.statusCode).toEqual(400);
-        expect(res1.body.message).toEqual('Username required');
+        expect(withoutUsernameRes.statusCode).toEqual(400);
 
         // Missing email
-        const res2 = await request(server).post('/api/users').send({ username, password });
+        const withoutEmailRes = await agent.post('/api/users').send({ username, password, roleId });
 
-        expect(res2.statusCode).toEqual(400);
-        expect(res2.body.message).toEqual('Email required');
+        expect(withoutEmailRes.statusCode).toEqual(400);
 
         // Missing password
-        const res3 = await request(server).post('/api/users').send({ username, email });
+        const withoutPasswordRes = await agent.post('/api/users').send({ username, email, roleId });
 
-        expect(res3.statusCode).toEqual(400);
-        expect(res3.body.message).toEqual('Password required');
+        expect(withoutPasswordRes.statusCode).toEqual(400);
+
+        // Missing role
+        const withoutRoleRes = await agent.post('/api/users').send({ username, email, password });
+
+        expect(withoutRoleRes.statusCode).toEqual(400);
 
         // Username have less that 5 characters
-        const res4 = await request(server).post('/api/users').send({ username: 'fake', email, password });
+        const invalidUsernameRes = await agent.post('/api/users').send({ username: 'fake', email, password });
 
-        expect(res4.statusCode).toEqual(400);
-        expect(res4.body.message).toEqual('Username must contain at least 5 characters');
+        expect(invalidUsernameRes.statusCode).toEqual(400);
 
         // Email is invalid
-        const res5 = await request(server).post('/api/users').send({ username, email: 'fake', password });
+        const invalidEmailRes = await agent.post('/api/users').send({ username, email: 'fake', password });
 
-        expect(res5.statusCode).toEqual(400);
-        expect(res5.body.message).toEqual('Email is invalid');
+        expect(invalidEmailRes.statusCode).toEqual(400);
 
         // Password have less that 8 characters
-        const res6 = await request(server).post('/api/users').send({ username, email, password: 'fake' });
+        const invalidPasswordRes = await agent.post('/api/users').send({ username, email, password: 'fake' });
 
-        expect(res6.statusCode).toEqual(400);
-        expect(res6.body.message).toEqual('Password must contain at least 8 characters');
+        expect(invalidPasswordRes.statusCode).toEqual(400);
+
+        // Inexistent role
+        const invalidRoleRes = await agent.post('/api/users').send({ username, email, password, roleId: 'fake' });
+
+        expect(invalidRoleRes.statusCode).toEqual(422);
     });
 
     test('User creation fails if username or email already exists', async () => {
-        const { username, email } = await createTestUser();
+        const agent = await createAuthenticatedAgent(server);
+        const defaultRole = await getRootRole();
+        const { username, email } = await createTestUser({ user: { username: 'fakeUser', email: 'fakeEmail@gmail.com' } });
 
         // Username already existing
-        const res1 = await request(server).post('/api/users').send({ username, email: 'otherEmail@gmail.com', password: 'password' });
-        expect(res1.statusCode).toEqual(409);
-        expect(res1.body.message).toEqual('Username already exists');
+        const conclictingUsernameRes = await agent.post('/api/users').send({ username, email: 'otherEmail@gmail.com', password: 'password', roleId: defaultRole.id });
+        expect(conclictingUsernameRes.statusCode).toEqual(409);
 
         // Email already existing
-        const res2 = await request(server).post('/api/users').send({ username: 'otherUsername', email, password: 'password' });
-        expect(res2.statusCode).toEqual(409);
-        expect(res2.body.message).toEqual('Email already exists');
+        const conclictingEmailRes = await agent.post('/api/users').send({ username: 'otherUsername', email, password: 'password', roleId: defaultRole.id });
+        expect(conclictingEmailRes.statusCode).toEqual(409);
     });
 
     test('Throw an error if unauthenticated user tries to get users list', async () => {
@@ -105,17 +150,13 @@ describe('Users routes', () => {
         expect(res1.statusCode).toEqual(200);
         expect(res1.body).toHaveLength(1);
 
-        const user = await createTestUser({
-            username: 'fakeUser',
-            password: 'fakeUserPwd',
-            email: 'fakeUser@gmail.com'
-        });
+        const user = await createTestUser({ user: { username: 'fakeUser', password: 'fakeUserPwd', email: 'fakeUser@gmail.com' } });
 
         const res2 = await agent.get('/api/users');
         expect(res2.statusCode).toEqual(200);
         expect(res2.body).toHaveLength(2);
 
-        const userRepo = AppDataSource.getRepository(User);
+        const userRepo = AppDataSource.getRepository(UserEntity);
         await userRepo.remove(user);
 
         const res3 = await agent.get('/api/users');
@@ -123,10 +164,72 @@ describe('Users routes', () => {
         expect(res3.body).toHaveLength(1);
     });
 
+    test('Get users role if sufficient permissions', async () => {
+        const agent = await createAuthenticatedAgent(server);
+
+        const adminRes = await agent.get('/api/users');
+        expect(adminRes.statusCode).toEqual(200);
+        expect(adminRes.body).toHaveLength(1);
+        expect(adminRes.body).toEqual(expect.arrayContaining([
+            expect.objectContaining({ role: expect.anything() })
+        ]));
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:roles')
+        });
+
+        const lowPermissionRes = await lowPermissionAgent.get('/api/users');
+        expect(lowPermissionRes.statusCode).toEqual(200);
+        expect(lowPermissionRes.body).not.toContainEqual(expect.objectContaining({
+            role: expect.anything()
+        }));
+    });
+
+    test('Get users list fails if unauthenticated', async () => {
+        const res = await request(server).get('/api/users');
+
+        expect(res.statusCode).toEqual(401);
+    });
+
+    test('Get users list fails if unauthorized', async () => {
+        const noPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+            permissions: []
+        });
+
+        const noPermissionRes = await noPermissionAgent.get('/api/users');
+        expect(noPermissionRes.statusCode).toEqual(403);
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:users')
+        });
+        const lowPermissionRes = await lowPermissionAgent.get('/api/users');
+        expect(lowPermissionRes.statusCode).toEqual(403);
+    });
+
     test('User deletion fails if unauthenticated', async () => {
         const res = await request(server).delete('/api/users/fakeUserId');
 
         expect(res.statusCode).toEqual(401);
+    });
+
+    test('User deletion fails if unauthorized', async () => {
+        const noPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+            permissions: []
+        });
+
+        const noPermissionRes = await noPermissionAgent.delete('/api/users/fakeUserId');
+        expect(noPermissionRes.statusCode).toEqual(403);
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'delete:users')
+        });
+        const lowPermissionRes = await lowPermissionAgent.delete('/api/users/fakeUserId');
+        expect(lowPermissionRes.statusCode).toEqual(403);
     });
 
     test('User deletion fails if user doesn\'t exist', async () => {
@@ -137,11 +240,11 @@ describe('Users routes', () => {
     });
 
     test('Delete a user', async () => {
-        const userRepo = AppDataSource.getRepository(User);
+        const userRepo = AppDataSource.getRepository(UserEntity);
         const agent = await createAuthenticatedAgent(server);
         
-        await createTestUser({ username: 'fake1', password: 'password', email: 'fake1@gmail.com' });
-        const userToDelete = await createTestUser({ username: 'fake2', password: 'password', email: 'fake2@gmail.com' });
+        await createTestUser({ user: { username: 'fake1', password: 'password', email: 'fake1@gmail.com' } });
+        const userToDelete = await createTestUser({ user: { username: 'fake2', password: 'password', email: 'fake2@gmail.com' } });
 
         const usersCountBeforeDelete = await userRepo.count();
         

@@ -16,26 +16,22 @@
     },
     "test": {
       "dotEnv": [".env.test"],
-      "outputs": []
+      "cache": false
     },
     "build": {
       "dependsOn": ["type-check", "lint"],
       "outputs": ["build/**", "dist/**"]
     },
     "migration:run": {
-      "outputs": [],
       "cache": false
     },
     "migration:generate": {
-      "outputs": [],
       "cache": false
     },
     "migration:revert": {
-      "outputs": [],
       "cache": false
     },
     "migration:create": {
-      "outputs": [],
       "cache": false
     }
   }

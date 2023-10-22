@@ -1,10 +1,10 @@
+import type { UsersCreateBody, UsersDeleteParams } from '@internal/types';
 import createHttpError from 'http-errors';
 import isEmail from 'validator/lib/isEmail';
 import isUUID from 'validator/lib/isUUID';
-import type { UsersCreateBody, UsersDeleteParams } from '@internal/types';
 
 export const validateCreateBody = (body: Partial<UsersCreateBody>) => {
-    const { username, email, password } = body;
+    const { username, email, password, roleId } = body;
 
     if (!username) {
         throw createHttpError(400, 'Username required');
@@ -25,6 +25,13 @@ export const validateCreateBody = (body: Partial<UsersCreateBody>) => {
     }
     if (password.length < 8) {
         throw createHttpError(400, 'Password must contain at least 8 characters');
+    }
+
+    if (!roleId) {
+        throw createHttpError(400, 'Role id required');
+    }
+    if (!isUUID(roleId, '4')) {
+        throw createHttpError(422, 'Cannot find role');
     }
 
     // As the function checked the properties are not missing,

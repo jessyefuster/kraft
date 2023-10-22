@@ -1,10 +1,10 @@
 import type { Request } from 'express';
 
-import type { User } from '../../src/entities/user';
+import type { UserWithRole } from '../../src/models/users';
 
 declare module 'express-serve-static-core' {
     interface Request {
-        user?: User;
+        user?: UserWithRole;
     }
 }
 

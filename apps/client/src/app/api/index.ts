@@ -1,11 +1,11 @@
 import type { AnyAction, AsyncThunk } from '@reduxjs/toolkit';
 import { isRejectedWithValue } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { AuthLoginBody, AuthLoginResponse, UserDTO, UsersListResponse } from '@internal/types';
+import type { AuthLoginBody, AuthLoginResponse, UserDTO, UsersListResponse, RolesListResponse, RoleDTO, RolesCreateResponse, RolesCreateBody } from '@internal/types';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
-  tagTypes: ['User', 'UNAUTHORIZED'],
+  tagTypes: ['User', 'Role', 'UNAUTHORIZED'],
   endpoints: (builder) => ({
     logIn: builder.mutation<AuthLoginResponse, AuthLoginBody>({
       query: (body) => ({
@@ -37,6 +37,27 @@ export const api = createApi({
       }),
       invalidatesTags: ['User']
     }),
+    getRoles: builder.query<RolesListResponse, void>({
+      query: () => '/roles',
+      providesTags: (result, error) => error?.status === 401
+        ? ['Role', 'UNAUTHORIZED']
+        : ['Role']
+    }),
+    deleteRole: builder.mutation<unknown, RoleDTO['id']>({
+      query: (id) => ({
+        url: `/roles/${id}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['Role']
+    }),
+    createRole: builder.mutation<RolesCreateResponse, RolesCreateBody>({
+      query: (body) => ({
+        url: '/roles',
+        method: 'POST',
+        body
+      }),
+      invalidatesTags: ['Role']
+    }),
   })
 });
 
@@ -52,5 +73,8 @@ export const {
   useLogOutMutation,
   useGetAuthenticationMutation,
   useGetUsersQuery,
-  useDeleteUserMutation
+  useDeleteUserMutation,
+  useGetRolesQuery,
+  useDeleteRoleMutation,
+  useCreateRoleMutation,
 } = api;

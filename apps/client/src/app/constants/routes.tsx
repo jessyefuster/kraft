@@ -1,10 +1,11 @@
 import LayersRoundedIcon from '@mui/icons-material/LayersRounded';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
-import SettingsIcon from '@mui/icons-material/Settings';
 import { redirect } from 'react-router-dom';
 
 import PrivateOutlet from '../../features/Auth/components/PrivateOutlet/PrivateOutlet';
 import LoginPage from '../../features/Auth/pages/LoginPage';
+import RolesPage from '../../features/Roles/pages/RolesPage';
 import UsersPage from '../../features/Users/pages/UsersPage';
 import HomePage from '../../pages/Home';
 import NotFoundPage from '../../pages/NotFound';
@@ -43,13 +44,13 @@ export const routes: Route[] = [
         }
       },
       {
-        path: 'settings',
-        element: <HomePage />,
+        path: 'roles',
+        element: <RolesPage title={'Rôles'} />,
         meta: {
-          title: 'Paramètres',
-          iconElement: <SettingsIcon />
+          title: 'Rôles',
+          iconElement: <ManageAccountsIcon />
         }
-      },
+      }
     ]
   },
   {

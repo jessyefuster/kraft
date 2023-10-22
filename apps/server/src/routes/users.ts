@@ -1,12 +1,12 @@
 import { Router } from 'express';
 
 import UsersController from '../controllers/users';
-import { isAuthenticated } from '../middlewares/auth';
+import { hasPermissions, isAuthenticated } from '../middlewares/auth';
 
 const router = Router();
 
-router.route('/:id').delete(isAuthenticated, UsersController.deleteOne);
-router.route('/').get(isAuthenticated, UsersController.getAll);
-router.route('/').post(UsersController.create);
+router.route('/:id').delete(isAuthenticated, hasPermissions(['delete:users']), UsersController.deleteOne);
+router.route('/').get(isAuthenticated, hasPermissions(['read:users']), UsersController.getAll);
+router.route('/').post(isAuthenticated, hasPermissions(['create:users']), UsersController.create);
 
 export default router;

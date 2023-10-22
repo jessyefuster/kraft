@@ -1,17 +1,24 @@
+import type { Relation } from 'typeorm';
 import {
     Column,
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
+    ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
 import { hashSync, genSaltSync } from 'bcryptjs';
 
-@Entity()
-export class User {
+import { RoleEntity } from './role';
+
+@Entity({ name: 'user' })
+export class UserEntity {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
+
+    @ManyToOne(() => RoleEntity, { nullable: false })
+    role!: Relation<RoleEntity> | undefined;
 
     @CreateDateColumn({ nullable: false })
     createdAt!: Date;
@@ -34,7 +41,7 @@ export class User {
     @Column({ nullable: false })
     salt!: string;
     
-    setPassword(password: string) {
+    set password(password: string) {
         this.salt = genSaltSync(12);
         this.hashPassword = hashSync(password, this.salt);
     }
