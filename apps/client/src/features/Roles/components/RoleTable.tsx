@@ -47,7 +47,7 @@ const RoleTable = ({ roles }: Props) => {
       data: {
         name: <AutoColoredChip labelStr={role.name} label={role.name} variant="outlined" />,
         description: role.description,
-        permissions: role.permissions?.length,
+        permissions: role.permissionsCount,
         // eslint-disable-next-line @arthurgeron/react-usememo/require-usememo
         actions: <DeleteRoleButton onDeleteConfirm={() => onDeleteRoleConfirm(role.id)}/>
       }

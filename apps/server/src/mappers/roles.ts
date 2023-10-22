@@ -40,7 +40,8 @@ export class RoleMapper implements Mapper<Role> {
             id: role.id || role.name,
             name: role.name,
             description: role.description,
-            permissions: role.permissions?.map(permission => this.permissionMapper.toDTO(permission))
+            permissions: role.permissions?.map(permission => this.permissionMapper.toDTO(permission)),
+            permissionsCount: role.permissions?.length ?? undefined
         };
     }
 }

@@ -5,6 +5,7 @@ export interface RoleDTO {
     name: string;
     description?: string;
     permissions?: PermissionDTO[];
+    permissionsCount?: number;
 }
 
 export interface RolesCreateBody {

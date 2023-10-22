@@ -6,24 +6,18 @@ import { In } from 'typeorm';
 import { AppDataSource } from '../../data-source';
 import { PermissionEntity } from '../../entities/permission';
 import { RoleEntity } from '../../entities/role';
-import { PermissionGroupMapper, PermissionMapper } from '../../mappers/permissions';
-import { RoleMapper } from '../../mappers/roles';
 import type { Permission } from '../../models/permissions';
 import { createPermissions } from '../../services/permissions';
-import { createRoleDTOFromEntity, createRoleEntity } from '../../services/roles';
+import { createRoleDTOFromEntity, createRoleEntity, createRoles, mapRolesForRolesList } from '../../services/roles';
 import { validateCreateBody, validateDeleteParams } from './validators';
 
 const getAll = async (req: Request, res: Response<RolesListResponse>) => {
     const roleRepo = AppDataSource.getRepository(RoleEntity);
     const rolesEntities = await roleRepo.find({ relations: { permissions: { group: true } } });
 
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const permissionMapper = new PermissionMapper(permissionGroupMapper);
-    const roleMapper = new RoleMapper(permissionMapper);
+    const roles = createRoles(rolesEntities);
 
-    const roles = rolesEntities.map((roleEntity) => roleMapper.fromEntity(roleEntity));
-
-    res.send(roles.map(role => roleMapper.toDTO(role)));
+    res.send(mapRolesForRolesList(roles));
 };
 
 const deleteOne = async (req: Request, res: Response) => {

@@ -20,6 +20,30 @@ export const createRole = (roleEntity: RoleEntity) => {
     return mapper.fromEntity(roleEntity);
 };
 
+export const createRoles = (roleEntities: RoleEntity[]) => {
+    const permissionGroupMapper = new PermissionGroupMapper();
+    const permissionMapper = new PermissionMapper(permissionGroupMapper);
+    const mapper = new RoleMapper(permissionMapper);
+
+    return roleEntities.map(entity => mapper.fromEntity(entity));
+};
+
+export const createRoleDTO = (role: Role) => {
+    const permissionGroupMapper = new PermissionGroupMapper();
+    const permissionMapper = new PermissionMapper(permissionGroupMapper);
+    const mapper = new RoleMapper(permissionMapper);
+
+    return mapper.toDTO(role);
+};
+
+export const createRolesDTO = (roles: Role[]) => {
+    const permissionGroupMapper = new PermissionGroupMapper();
+    const permissionMapper = new PermissionMapper(permissionGroupMapper);
+    const mapper = new RoleMapper(permissionMapper);
+
+    return roles.map(role => mapper.toDTO(role));
+};
+
 export const createRoleDTOFromEntity = (roleEntity: RoleEntity) => {
     const permissionGroupMapper = new PermissionGroupMapper();
     const permissionMapper = new PermissionMapper(permissionGroupMapper);
@@ -37,4 +61,15 @@ export const roleHasPermissions = (role: Role, permissions: AnyPermission[]) => 
     return permissions.every(permission => 
         rolePermissions.find(rolePermission => rolePermission.code === permission)
     );
+};
+
+export const mapRolesForRolesList = (roles: Role[]) => {
+    const rolesList = createRolesDTO(roles);
+
+    return rolesList.sort((a, b) => {
+        const aPermissionsCount = a.permissionsCount ?? 0;
+        const bPermissionsCount = b.permissionsCount ?? 0;
+
+        return bPermissionsCount - aPermissionsCount;
+    });
 };
