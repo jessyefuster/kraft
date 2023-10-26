@@ -20,14 +20,16 @@ const UsersPage = ({ title }: Props) => {
   const { data: users } = useGetUsersQuery();
 
   return (
-    <Page>
-      <Box padding={4}>
-        <Header>
-          <Typography variant="h4">{title}</Typography>
-          <Button variant="contained" startIcon={<AddCircleOutlineIcon />}>Nouvel utilisateur</Button>
-        </Header>
-        {users && <UserTable users={users} />}
-      </Box>
+    <Page padding={4}>
+      <Header>
+        <Typography variant="h4">{title}</Typography>
+        <Button variant="contained" startIcon={<AddCircleOutlineIcon />}>Nouvel utilisateur</Button>
+      </Header>
+      {users && (
+        <Box flex={1} marginTop={4} position={'relative'}>
+          <UserTable users={users} containerProps={{ position: 'absolute', height: '100%' }} />
+        </Box>
+      )}
     </Page>
   );
 };

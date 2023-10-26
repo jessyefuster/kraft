@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import type { BoxProps } from '@mui/material/Box';
 import MuiTable from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import type { TableCellProps } from '@mui/material/TableCell';
@@ -13,26 +15,32 @@ type NodeRecord = Record<string, React.ReactNode>;
 
 export interface Column extends TableCellProps {}
 
-export interface Item<T extends NodeRecord> {
+export interface Item<T> {
   key: string;
   data: T;
 }
 
-interface Props<T extends NodeRecord> {
+export interface TableProps {
   label: string;
   columns: Column[];
-  items: Item<T>[];
+  items: Item<NodeRecord>[];
+  containerProps?: BoxProps;
 }
 
-const Table = <T extends NodeRecord>({ label, columns, items }: Props<T>) => {
+const Table = ({ label, columns, items, containerProps }: TableProps) => {
   const defaultLabelDisplayedRows = useCallback(
     ({ count }: LabelDisplayedRowsArgs)=> `${count} élément${count > 1 ? 's' : ''}`
   , []);
 
   return (
-    <>
-      <TableContainer sx={{ marginTop: 2 }}>
-        <MuiTable aria-label={label}>
+    <Box
+      {...containerProps}
+      display="flex"
+      flexDirection="column"
+      width="100%"
+    >
+      <TableContainer sx={{ flex: 1 }}>
+        <MuiTable stickyHeader={!!containerProps?.height} aria-label={label}>
           <TableHead>
             <TableRow>
               {columns.map(column => (
@@ -63,7 +71,7 @@ const Table = <T extends NodeRecord>({ label, columns, items }: Props<T>) => {
         onPageChange={() => {}}
         component="div"
       />
-    </>
+    </Box>
   );
 };
 

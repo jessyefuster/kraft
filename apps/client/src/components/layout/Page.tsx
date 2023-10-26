@@ -13,7 +13,6 @@ const Main = styled(Box, {
   shouldForwardProp: (propName: PropertyKey) => !propName.toString().startsWith('$')
 })<MainProps>(({ $orientation }) => ({
   display: 'flex',
-  height: '100%',
   flex: 1,
   flexDirection: $orientation,
 }));

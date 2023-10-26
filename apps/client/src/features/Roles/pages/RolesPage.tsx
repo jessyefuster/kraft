@@ -20,14 +20,16 @@ const RolesPage = ({ title }: Props) => {
   const { data: roles } = useGetRolesQuery();
 
   return (
-    <Page>
-      <Box padding={4}>
-        <Header>
-          <Typography variant="h4">{title}</Typography>
-          <CreateRoleButton />
-        </Header>
-        {roles && <RoleTable roles={roles} />}
-      </Box>
+    <Page padding={4}>
+      <Header>
+        <Typography variant="h4">{title}</Typography>
+        <CreateRoleButton />
+      </Header>
+      {roles && (
+        <Box flex={1} marginTop={4} position={'relative'}>
+          <RoleTable roles={roles} containerProps={{ position: 'absolute', height: '100%' }} />
+        </Box>
+      )}
     </Page>
   );
 };

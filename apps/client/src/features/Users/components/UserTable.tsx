@@ -7,11 +7,12 @@ import { useDeleteUserMutation } from '../../../app/api';
 import AutoColoredChip from '../../../components/ui/AutoColoredChip';
 import type { Props as ButtonWithConfirmDialogProps } from '../../../components/ui/ButtonWithConfirmDialog';
 import ButtonWithConfirmDialog from '../../../components/ui/ButtonWithConfirmDialog';
-import type { Column } from '../../../components/ui/Table';
+import type { Column, TableProps } from '../../../components/ui/Table';
 import Table from '../../../components/ui/Table';
 
 interface Props {
   users: UserDTO[];
+  containerProps?: TableProps['containerProps'];
 }
 
 const DeleteUserButton = ({ onDeleteConfirm }: { onDeleteConfirm: () => void }) => {
@@ -31,7 +32,7 @@ const DeleteUserButton = ({ onDeleteConfirm }: { onDeleteConfirm: () => void }) 
   );
 };
 
-const UserTable = ({ users }: Props) => {
+const UserTable = ({ users, containerProps }: Props) => {
   const [deleteUser] = useDeleteUserMutation();
   const onDeleteUserConfirm = useCallback((userId: string) => deleteUser(userId), [deleteUser]);
 
@@ -65,6 +66,7 @@ const UserTable = ({ users }: Props) => {
 
   return (
     <Table
+      containerProps={containerProps}
       label="Liste des utilisateurs"
       {...table}
     />

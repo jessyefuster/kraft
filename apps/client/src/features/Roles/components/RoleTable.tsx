@@ -7,11 +7,12 @@ import { useDeleteRoleMutation } from '../../../app/api';
 import AutoColoredChip from '../../../components/ui/AutoColoredChip';
 import type { Props as ButtonWithConfirmDialogProps } from '../../../components/ui/ButtonWithConfirmDialog';
 import ButtonWithConfirmDialog from '../../../components/ui/ButtonWithConfirmDialog';
-import type { Column } from '../../../components/ui/Table';
+import type { Column, TableProps } from '../../../components/ui/Table';
 import Table from '../../../components/ui/Table';
 
 interface Props {
   roles: RoleDTO[];
+  containerProps?: TableProps['containerProps'];
 }
 
 const DeleteRoleButton = ({ onDeleteConfirm }: { onDeleteConfirm: () => void }) => {
@@ -31,7 +32,7 @@ const DeleteRoleButton = ({ onDeleteConfirm }: { onDeleteConfirm: () => void }) 
   );
 };
 
-const RoleTable = ({ roles }: Props) => {
+const RoleTable = ({ roles, containerProps }: Props) => {
   const [deleteRole] = useDeleteRoleMutation();
   const onDeleteRoleConfirm = useCallback((userId: string) => deleteRole(userId), [deleteRole]);
 
@@ -61,6 +62,7 @@ const RoleTable = ({ roles }: Props) => {
 
   return (
     <Table
+      containerProps={containerProps}
       label="Liste des rôles"
       {...table}
     />
