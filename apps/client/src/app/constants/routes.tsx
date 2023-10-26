@@ -5,6 +5,7 @@ import { redirect } from 'react-router-dom';
 
 import PrivateOutlet from '../../features/Auth/components/PrivateOutlet/PrivateOutlet';
 import LoginPage from '../../features/Auth/pages/LoginPage';
+import RolePage from '../../features/Roles/pages/RolePage';
 import RolesPage from '../../features/Roles/pages/RolesPage';
 import UsersPage from '../../features/Users/pages/UsersPage';
 import HomePage from '../../pages/Home';
@@ -45,11 +46,20 @@ export const routes: Route[] = [
       },
       {
         path: 'roles',
-        element: <RolesPage title={'Rôles'} />,
         meta: {
           title: 'Rôles',
           iconElement: <ManageAccountsIcon />
-        }
+        },
+        children: [
+          {
+            index: true,
+            element: <RolesPage title={'Rôles'} />
+          },
+          {
+            path: ':id',
+            element: <RolePage />,
+          }
+        ]
       }
     ]
   },

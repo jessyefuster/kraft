@@ -54,7 +54,8 @@ const NavigationDrawer = ({ basePath = '/' }: Props) => {
       <Divider />
       <List>
         {items.map(item => {
-          const isItemActive = location.pathname === getRoutePath(item);
+          const routePath = getRoutePath(item);
+          const isItemActive = !!routePath && location.pathname.startsWith(routePath);
 
           return (
             <ListItem key={item.path}>
