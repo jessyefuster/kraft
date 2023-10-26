@@ -1,7 +1,10 @@
 
 import type { RoleDTO } from '@internal/types';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ReadMoreIcon from '@mui/icons-material/ReadMore';
+import { IconButton } from '@mui/material';
 import { useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { useDeleteRoleMutation } from '../../../app/api';
 import AutoColoredChip from '../../../components/ui/AutoColoredChip';
@@ -32,6 +35,20 @@ const DeleteRoleButton = ({ onDeleteConfirm }: { onDeleteConfirm: () => void }) 
   );
 };
 
+const ViewDetailButton = ({ id }: { id: string }) => {
+  const navigate = useNavigate();
+
+  const onClick = useCallback(() => {
+    navigate(`/roles/${id}`);
+  }, [id, navigate]);
+
+  return (
+    <IconButton onClick={onClick}>
+      <ReadMoreIcon />
+    </IconButton>
+  );
+};
+
 const RoleTable = ({ roles, containerProps }: Props) => {
   const [deleteRole] = useDeleteRoleMutation();
   const onDeleteRoleConfirm = useCallback((userId: string) => deleteRole(userId), [deleteRole]);
@@ -49,8 +66,11 @@ const RoleTable = ({ roles, containerProps }: Props) => {
         name: <AutoColoredChip labelStr={role.name} label={role.name} variant="outlined" />,
         description: role.description,
         permissions: role.permissionsCount,
-        // eslint-disable-next-line @arthurgeron/react-usememo/require-usememo
-        actions: <DeleteRoleButton onDeleteConfirm={() => onDeleteRoleConfirm(role.id)}/>
+        actions:
+          <>
+            <DeleteRoleButton onDeleteConfirm={() => onDeleteRoleConfirm(role.id)}/>
+            <ViewDetailButton id={role.id} />
+          </>
       }
     }));
   
