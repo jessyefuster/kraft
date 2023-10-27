@@ -1,4 +1,4 @@
-import type { RolesCreateBody, RolesCreateResponse, RolesListResponse } from '@internal/types';
+import type { RoleGetResponse, RolesCreateBody, RolesCreateResponse, RolesListResponse } from '@internal/types';
 import type { Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import { In } from 'typeorm';
@@ -9,7 +9,7 @@ import { RoleEntity } from '../../entities/role';
 import type { Permission } from '../../models/permissions';
 import { createPermissions } from '../../services/permissions';
 import { createRoleDTOFromEntity, createRoleEntity, createRoles, mapRolesForRolesList } from '../../services/roles';
-import { validateCreateBody, validateDeleteParams } from './validators';
+import { validateCreateBody, validateDeleteParams, validateGetParams } from './validators';
 
 const getAll = async (req: Request, res: Response<RolesListResponse>) => {
     const roleRepo = AppDataSource.getRepository(RoleEntity);
@@ -18,6 +18,24 @@ const getAll = async (req: Request, res: Response<RolesListResponse>) => {
     const roles = createRoles(rolesEntities);
 
     res.send(mapRolesForRolesList(roles));
+};
+
+const getOne = async (req: Request, res: Response<RoleGetResponse>) => {
+    const { id } = validateGetParams(req.params);
+
+    const roleRepo = AppDataSource.getRepository(RoleEntity);
+    const roleEntity = await roleRepo.findOne({
+        where: { id },
+        relations: { permissions: { group: true } }
+    });
+
+    if (!roleEntity) {
+        throw createHttpError(404, 'Cannot find role');
+    }
+
+    const role = createRoleDTOFromEntity(roleEntity);
+
+    res.send(role);
 };
 
 const deleteOne = async (req: Request, res: Response) => {
@@ -75,5 +93,6 @@ const createOne = async (req: TypedRequestBody<RolesCreateBody>, res: Response<R
 export default {
     getAll,
     deleteOne,
-    createOne
+    createOne,
+    getOne
 };

@@ -222,4 +222,36 @@ describe('Roles routes', () => {
         const lowPermissionRes = await lowPermissionAgent.delete('/api/roles/fakeRoleId');
         expect(lowPermissionRes.statusCode).toEqual(403);
     });
+
+    test('Get role', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const rootRoleEntity = await getRootRole();
+        
+        const res = await agent.get(`/api/roles/${rootRoleEntity.id}`);
+        
+        expect(res.statusCode).toEqual(200);
+    });
+
+    test('Get role fails if unauthenticated', async () => {
+        const res = await request(server).get('/api/roles/fakeRoleId');
+
+        expect(res.statusCode).toEqual(401);
+    });
+
+    test('Get role fails if unauthorized', async () =>  {
+        const noPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+            permissions: []
+        });
+
+        const noPermissionRes = await noPermissionAgent.get('/api/roles/fakeRoleId');
+        expect(noPermissionRes.statusCode).toEqual(403);
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:roles')
+        });
+        const lowPermissionRes = await lowPermissionAgent.get('/api/roles/fakeRoleId');
+        expect(lowPermissionRes.statusCode).toEqual(403);
+    });
 });

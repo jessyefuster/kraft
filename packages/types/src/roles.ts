@@ -21,3 +21,9 @@ export interface RolesDeleteParams {
 }
 
 export type RolesListResponse = Array<RoleDTO>;
+
+export interface RoleGetParams {
+    id: string;
+}
+
+export type RoleGetResponse = RoleDTO;
