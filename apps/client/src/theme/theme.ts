@@ -48,6 +48,11 @@ export const themeOptions: ThemeOptions = {
       fontFamily: titleFonts.join(','),
       fontWeight: 600,
       textTransform: 'none'
+    },
+    subtitle1: {
+      fontFamily: titleFonts.join(','),
+      fontWeight: 600,
+      color: '#67689e'
     }
   },
   shape: {

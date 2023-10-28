@@ -11,6 +11,7 @@ import errorIllustrationUrl from '../../../assets/error_illustration.png';
 import Page from '../../../components/layout/Page';
 import type { Tab } from '../../../components/ui/Tabs';
 import Tabs from '../../../components/ui/Tabs';
+import EditRoleDetailsForm from '../components/EditRoleDetailsForm';
 
 const Header = styled(Box)({
   display: 'flex',
@@ -28,7 +29,7 @@ const RolePage = () => {
   const tabs = useMemo<Tab[]>(() => [
     {
       label: 'Détails',
-      component: undefined
+      component: <EditRoleDetailsForm role={role} />
     },
     {
       label: 'Permissions',
@@ -38,7 +39,7 @@ const RolePage = () => {
       label: 'Utilisateurs',
       component: undefined
     },
-  ], []);
+  ], [role]);
 
   return (
     <Page padding={4}>
