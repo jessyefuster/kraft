@@ -1,8 +1,9 @@
 
+import type { RoleDTO } from '@internal/types';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import { styled } from '@mui/material/styles';
 
 import Form from '../../../components/forms/Form';
 import TextInput from '../../../components/forms/TextInput';
@@ -16,7 +17,7 @@ const ActionsContainer = styled(Box)({
 
 interface Props {
   onBackClick: () => void;
-  onSubmitSuccess: () => void;
+  onSubmitSuccess: (role: RoleDTO) => void;
 }
 
 const CreateRoleForm = ({ onBackClick, onSubmitSuccess }: Props) => {

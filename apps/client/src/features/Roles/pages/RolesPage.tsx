@@ -1,5 +1,8 @@
+import type { RoleDTO } from '@internal/types';
 import { Box, styled } from '@mui/material';
 import Typography from '@mui/material/Typography';
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { useGetRolesQuery } from '../../../app/api';
 import Page from '../../../components/layout/Page';
@@ -17,13 +20,16 @@ interface Props {
 }
 
 const RolesPage = ({ title }: Props) => {
+  const navigate = useNavigate();
   const { data: roles } = useGetRolesQuery();
+
+  const onCreateRole = useCallback((role: RoleDTO) => navigate(role.id), [navigate]);
 
   return (
     <Page padding={4}>
       <Header>
         <Typography variant="h4">{title}</Typography>
-        <CreateRoleButton />
+        <CreateRoleButton onCreateRole={onCreateRole}/>
       </Header>
       {roles && (
         <Box flex={1} marginTop={4} position={'relative'}>
