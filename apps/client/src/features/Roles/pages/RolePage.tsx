@@ -6,12 +6,13 @@ import Typography from '@mui/material/Typography';
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { useGetRoleQuery } from '../../../app/api';
+import { useGetRolePermissionsQuery, useGetRoleQuery } from '../../../app/api';
 import errorIllustrationUrl from '../../../assets/error_illustration.png';
 import Page from '../../../components/layout/Page';
 import type { Tab } from '../../../components/ui/Tabs';
 import Tabs from '../../../components/ui/Tabs';
 import EditRoleDetailsForm from '../components/EditRoleDetailsForm';
+import PermissionTable from '../components/PermissionTable';
 
 const Header = styled(Box)({
   display: 'flex',
@@ -23,6 +24,7 @@ const RolePage = () => {
   const navigate = useNavigate();
   const { id = '' } = useParams();
   const { data: role, isError } = useGetRoleQuery(id);
+  const { data: permissions = [] } = useGetRolePermissionsQuery(id);
 
   const onBackButtonClick = useCallback(() => navigate('/roles'), [navigate]);
 
@@ -33,13 +35,13 @@ const RolePage = () => {
     },
     {
       label: 'Permissions',
-      component: undefined
+      component: <PermissionTable permissions={permissions}/>
     },
     {
       label: 'Utilisateurs',
       component: undefined
     },
-  ], [role]);
+  ], [role, permissions]);
 
   return (
     <Page padding={4}>
