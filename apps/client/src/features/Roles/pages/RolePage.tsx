@@ -12,7 +12,8 @@ import Page from '../../../components/layout/Page';
 import type { Tab } from '../../../components/ui/Tabs';
 import Tabs from '../../../components/ui/Tabs';
 import EditRoleDetailsForm from '../components/EditRoleDetailsForm';
-import PermissionTable from '../components/PermissionTable';
+import PermissionsPanel from '../components/PermissionsPanel';
+import StateIllustration from '../../../components/ui/StateIllustration';
 
 const Header = styled(Box)({
   display: 'flex',
@@ -35,7 +36,7 @@ const RolePage = () => {
     },
     {
       label: 'Permissions',
-      component: <PermissionTable permissions={permissions}/>
+      component: <PermissionsPanel permissions={permissions}/>
     },
     {
       label: 'Utilisateurs',
@@ -58,14 +59,16 @@ const RolePage = () => {
               <Typography variant="h4">{role.name}</Typography>
               <Typography variant="caption" marginTop={1}>ID du rôle <code>{id}</code></Typography>
             </Header>
-            <Box flex={1} marginTop={4}>
+            <Box display="flex" flexDirection="column" flex={1} marginTop={4}>
               <Tabs tabs={tabs}/>
             </Box>
           </>
         : isError && (
-            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-              <img src={errorIllustrationUrl} height={350}/>
-            </Box>
+            <StateIllustration
+              state="error"
+              title="Uh-oh"
+              message="Impossible de récupérer l'élément"
+            />
           )
       }
     </Page>

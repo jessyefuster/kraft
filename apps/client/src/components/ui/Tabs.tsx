@@ -1,12 +1,25 @@
 import Box from '@mui/material/Box';
 import MuiTab from '@mui/material/Tab';
 import MuiTabs from '@mui/material/Tabs';
+import { styled } from '@mui/material/styles';
 import React, { useCallback, useState } from 'react';
 
-const a11yProps = (index: number) => ({
+const tabA11yProps = (index: number) => ({
   id: `tab-${index}`,
   'aria-controls': `tabpanel-${index}`,
 });
+
+interface TabPanelContainerProps {
+  $active: boolean;
+}
+
+const TabPanelContainer = styled(Box, {
+  shouldForwardProp: (propName: PropertyKey) => !propName.toString().startsWith('$')
+})<TabPanelContainerProps>(({ theme, $active }) => ({
+  display: $active ? 'flex' : 'none',
+  flex: 1,
+  flexDirection: 'column'
+}));
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -15,19 +28,16 @@ interface TabPanelProps {
 }
 
 const TabPanel = ({ children, value, index, ...rest }: TabPanelProps) => (
-  <div
+  <TabPanelContainer
+    $active={value === index}
+    p={3}
     role="tabpanel"
-    hidden={value !== index}
     id={`tabpanel-${index}`}
     aria-labelledby={`tab-${index}`}
     {...rest}
   >
-    {value === index && (
-      <Box sx={{ p: 3 }}>
-        {children}
-      </Box>
-    )}
-  </div>
+    {value === index && children}
+  </TabPanelContainer>
 );
 
 export interface Tab {
@@ -52,7 +62,7 @@ const Tabs = ({ tabs }: Props) => {
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <MuiTabs value={value} onChange={handleTabChange} aria-label="basic tabs example">
           {tabs.map(({ label, disabled }, index) => (
-            <MuiTab label={label} disabled={disabled} {...a11yProps(index)} key={index}/>
+            <MuiTab label={label} disabled={disabled} {...tabA11yProps(index)} key={index}/>
           ))}
         </MuiTabs>
       </Box>
