@@ -7,13 +7,13 @@ import { useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useGetRolePermissionsQuery, useGetRoleQuery } from '../../../app/api';
-import errorIllustrationUrl from '../../../assets/error_illustration.png';
 import Page from '../../../components/layout/Page';
+import StateIllustration from '../../../components/ui/StateIllustration';
 import type { Tab } from '../../../components/ui/Tabs';
 import Tabs from '../../../components/ui/Tabs';
 import EditRoleDetailsForm from '../components/EditRoleDetailsForm';
 import PermissionsPanel from '../components/PermissionsPanel';
-import StateIllustration from '../../../components/ui/StateIllustration';
+import UsersPanel from '../components/UsersPanel';
 
 const Header = styled(Box)({
   display: 'flex',
@@ -40,7 +40,7 @@ const RolePage = () => {
     },
     {
       label: 'Utilisateurs',
-      component: undefined
+      component: <UsersPanel />
     },
   ], [role, permissions]);
 
