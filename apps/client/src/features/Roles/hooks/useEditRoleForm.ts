@@ -6,7 +6,7 @@ import { useYupForm } from '../../../hooks/useYupForm';
 import yup from '../../../lib/yup';
 
 const validationSchema = yup.object({
-  name: yup.string(),
+  name: yup.string().required('Le nom du rôle est requis'),
   description: yup.string(),
 });
 

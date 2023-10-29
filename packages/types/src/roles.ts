@@ -28,6 +28,9 @@ export interface RoleGetParams {
 
 export type RoleGetResponse = RoleDTO;
 
-export type RoleEditBody = Partial<RolesCreateBody>;
+export interface RoleEditBody {
+    name?: string;
+    description?: string | null;
+}
 
 export type RoleEditResponse = RoleDTO;

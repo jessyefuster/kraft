@@ -1,4 +1,4 @@
-import type { RoleGetParams, RolesCreateBody, RolesDeleteParams } from '@internal/types';
+import type { RoleEditBody, RoleGetParams, RolesCreateBody, RolesDeleteParams } from '@internal/types';
 import createHttpError from 'http-errors';
 import isUUID from 'validator/lib/isUUID';
 
@@ -42,4 +42,25 @@ export const validateGetParams = (params: Partial<RoleGetParams>) => {
     }
 
     return params as RoleGetParams;
+};
+
+export const validateUpdatePayload = (params: Partial<RoleGetParams>, body: Partial<RoleEditBody>) => {
+    const { id } = params;
+    const { name, description } = body;
+
+    if (!id) {
+        throw createHttpError(400, 'Role id required');
+    }
+    if (!isUUID(id, '4')) {
+        throw createHttpError(404, 'Cannot find role');
+    }
+
+    if (name === '') {
+        throw createHttpError(400, 'Name cannot be empty');
+    }
+
+    return { params, body: { ...body, description: description === '' ? null : description } } as {
+        params: RoleGetParams;
+        body: Partial<RoleEditBody>;
+    };
 };

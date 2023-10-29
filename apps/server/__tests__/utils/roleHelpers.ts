@@ -44,10 +44,10 @@ export const createTestRole = async (testRole?: TestRoleProps, isRoot: boolean =
     return roleEntity;
 };
 
-export const getRole = async (name: string) => {
+export const getRole = async ({ name, id }: { name?: string; id?: string }) => {
     const roleRepo = AppDataSource.getRepository(RoleEntity);
 
-    return await roleRepo.findOne({ where: { name }, relations: { permissions: true } });
+    return await roleRepo.findOne({ where: { name, id }, relations: { permissions: true } });
 };
 
 export const getRootRole = async () => {

@@ -1,4 +1,4 @@
-import type { RolesCreateBody } from '@internal/types';
+import type { RoleEditBody, RolesCreateBody } from '@internal/types';
 import type { Server } from 'http';
 import request from 'supertest';
 
@@ -88,7 +88,7 @@ describe('Roles routes', () => {
         };
 
         const res = await agent.post('/api/roles').send(payload);
-        const roleEntity = await getRole(roleData.name);
+        const roleEntity = await getRole({ name: roleData.name });
 
         expect(res.statusCode).toEqual(201);
         expect(roleEntity).not.toBeNull();
@@ -178,7 +178,7 @@ describe('Roles routes', () => {
         });
 
         const res = await agent.delete(`/api/roles/${roleEntity.id}`);
-        const repoRoleEntity = await getRole(roleEntity.name);
+        const repoRoleEntity = await getRole({ name: roleEntity.name });
         
         expect(res.statusCode).toEqual(204);
         expect(repoRoleEntity).toBeNull();
@@ -238,7 +238,7 @@ describe('Roles routes', () => {
         expect(res.statusCode).toEqual(401);
     });
 
-    test('Get role fails if unauthorized', async () =>  {
+    test('Get role fails if unauthorized', async () => {
         const noPermissionAgent = await createAuthenticatedAgent(server, {
             user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
             permissions: []
@@ -253,5 +253,135 @@ describe('Roles routes', () => {
         });
         const lowPermissionRes = await lowPermissionAgent.get('/api/roles/fakeRoleId');
         expect(lowPermissionRes.statusCode).toEqual(403);
+    });
+
+    test('Get role fails if role doesn\'t exist', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const res = await agent.get('/api/roles/fakeRoleId');
+
+        expect(res.statusCode).toEqual(404);
+    });
+
+    test('Update a role', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const roleEntity = await createTestRole();
+
+        // change all data
+        const fullDataPayload: RoleEditBody = {
+            name: 'Role name',
+            description: 'Role description'
+        };
+        
+        const fullUpdateRes = await agent.patch(`/api/roles/${roleEntity.id}`).send(fullDataPayload);
+        const roleEntityAfterFullUpdate = await getRole({ id: roleEntity.id });
+
+        expect(fullUpdateRes.statusCode).toEqual(200);
+
+        expect(roleEntityAfterFullUpdate!.name).toEqual(fullDataPayload.name);
+        expect(roleEntityAfterFullUpdate!.description).toEqual(fullDataPayload.description);
+
+        // change description only
+        const descriptionOnlyPayload: RoleEditBody = {
+            description: 'New role description'
+        };
+
+        const descriptionOnlyRes = await agent.patch(`/api/roles/${roleEntity.id}`).send(descriptionOnlyPayload);
+        const roleEntityAfterDescriptionUpdate = await getRole({ id: roleEntity.id });
+
+        expect(descriptionOnlyRes.statusCode).toEqual(200);
+
+        expect(roleEntityAfterDescriptionUpdate!.name).toEqual(roleEntityAfterFullUpdate!.name);
+        expect(roleEntityAfterDescriptionUpdate!.description).toEqual(descriptionOnlyPayload.description);
+
+        // change name only
+        const nameOnlyPayload: RoleEditBody = {
+            name: 'New role name'
+        };
+
+        const nameOnlyRes = await agent.patch(`/api/roles/${roleEntity.id}`).send(nameOnlyPayload);
+        const roleEntityAfterNameUpdate = await getRole({ id: roleEntity.id });
+
+        expect(nameOnlyRes.statusCode).toEqual(200);
+
+        expect(roleEntityAfterNameUpdate!.name).toEqual(nameOnlyPayload.name);
+        expect(roleEntityAfterNameUpdate!.description).toEqual(roleEntityAfterDescriptionUpdate!.description);
+
+        // change name only
+        const removeDescriptionPayload: RoleEditBody = {
+            description: ''
+        };
+
+        const removeDescriptionRes = await agent.patch(`/api/roles/${roleEntity.id}`).send(removeDescriptionPayload);
+        const roleEntityAfterDescriptionRemove = await getRole({ id: roleEntity.id });
+
+        expect(removeDescriptionRes.statusCode).toEqual(200);
+
+        expect(roleEntityAfterDescriptionRemove!.description).toBeNull();
+    });
+
+    test('Update a role fails if unauthenticated', async () => {
+        const res = await request(server).patch('/api/roles/fakeRoleId');
+
+        expect(res.statusCode).toEqual(401);
+    });
+
+    test('Update a role fails if unauthorized', async () => {
+        const noPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+            permissions: []
+        });
+
+        const noPermissionRes = await noPermissionAgent.patch('/api/roles/fakeRoleId');
+        expect(noPermissionRes.statusCode).toEqual(403);
+
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ALL_PERMISSIONS.filter(permission => permission !== 'update:roles')
+        });
+        const lowPermissionRes = await lowPermissionAgent.patch('/api/roles/fakeRoleId');
+        expect(lowPermissionRes.statusCode).toEqual(403);
+    });
+
+    test('Update a role fails if role is root', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const rootRoleEntity = await getRootRole();
+
+        const res = await agent.patch(`/api/roles/${rootRoleEntity.id}`);
+
+        expect(res.statusCode).toEqual(405);
+    });
+
+    test('Update a role fails if query body is invalid', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const roleEntity = await createTestRole();
+
+        const conflictingNamePayload: RoleEditBody = {
+            name: ''
+        };
+        
+        const conflictingRes = await agent.patch(`/api/roles/${roleEntity.id}`).send(conflictingNamePayload);
+
+        expect(conflictingRes.statusCode).toEqual(400);
+    });
+
+    test('Update a role fails if data is conflicting', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const rootRoleEntity = await getRootRole();
+        const roleEntity = await createTestRole();
+
+        const payload: RoleEditBody = {
+            name: rootRoleEntity.name
+        };
+        
+        const res = await agent.patch(`/api/roles/${roleEntity.id}`).send(payload);
+
+        expect(res.statusCode).toEqual(409);
+    });
+
+    test('Update a role fails if role doesn\'t exist', async () => {
+        const agent = await createAuthenticatedAgent(server);
+        const res = await agent.patch('/api/roles/fakeRoleId');
+
+        expect(res.statusCode).toEqual(404);
     });
 });

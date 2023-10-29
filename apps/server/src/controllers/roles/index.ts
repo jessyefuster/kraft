@@ -1,4 +1,4 @@
-import type { RoleGetResponse, RolesCreateBody, RolesCreateResponse, RolesListResponse } from '@internal/types';
+import type { RoleEditBody, RoleEditResponse, RoleGetResponse, RolesCreateBody, RolesCreateResponse, RolesListResponse } from '@internal/types';
 import type { Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import { In } from 'typeorm';
@@ -9,7 +9,7 @@ import { RoleEntity } from '../../entities/role';
 import type { Permission } from '../../models/permissions';
 import { createPermissions } from '../../services/permissions';
 import { createRoleDTOFromEntity, createRoleEntity, createRoles, mapRolesForRolesList } from '../../services/roles';
-import { validateCreateBody, validateDeleteParams, validateGetParams } from './validators';
+import { validateCreateBody, validateDeleteParams, validateGetParams, validateUpdatePayload } from './validators';
 
 const getAll = async (req: Request, res: Response<RolesListResponse>) => {
     const roleRepo = AppDataSource.getRepository(RoleEntity);
@@ -90,9 +90,42 @@ const createOne = async (req: TypedRequestBody<RolesCreateBody>, res: Response<R
     res.status(201).send(createRoleDTOFromEntity(newRole));
 };
 
+const updateOne = async (req: TypedRequestBody<RoleEditBody>, res: Response<RoleEditResponse>) => {
+    const { params: { id }, body: { name, description } } = validateUpdatePayload(req.params, req.body);
+
+    const roleRepo = AppDataSource.getRepository(RoleEntity);
+    const roleEntity = await roleRepo.findOneBy({ id });
+
+    if (!roleEntity) {
+        throw createHttpError(404, 'Cannot find role');
+    }
+
+    if (roleEntity.isRoot) {
+        throw createHttpError(405, 'Role is read-only');
+    }
+
+    if (name) {
+        const conflictingRoleEntity = await roleRepo.findOneBy({ name });
+
+        if (conflictingRoleEntity && conflictingRoleEntity.id !== roleEntity.id) {
+            throw createHttpError(409, 'Role name is already taken');
+        }
+
+        roleEntity.name = name;
+    }
+    if (description !== undefined) {
+        roleEntity.description = description;
+    }
+
+    await roleRepo.save(roleEntity);
+
+    res.status(200).send(createRoleDTOFromEntity(roleEntity));
+};
+
 export default {
     getAll,
     deleteOne,
     createOne,
-    getOne
+    getOne,
+    updateOne
 };
