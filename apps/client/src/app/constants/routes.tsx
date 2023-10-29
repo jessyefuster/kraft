@@ -1,5 +1,5 @@
 import LayersRoundedIcon from '@mui/icons-material/LayersRounded';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import KeyIcon from '@mui/icons-material/Key';
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
 import { redirect } from 'react-router-dom';
 
@@ -48,7 +48,7 @@ export const routes: Route[] = [
         path: 'roles',
         meta: {
           title: 'Rôles',
-          iconElement: <ManageAccountsIcon />
+          iconElement: <KeyIcon />
         },
         children: [
           {
