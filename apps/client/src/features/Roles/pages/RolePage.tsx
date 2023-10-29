@@ -35,11 +35,11 @@ const RolePage = () => {
       component: <EditRoleDetailsForm role={role} />
     },
     {
-      label: 'Permissions',
+      label: `Permissions (${permissions.length})`,
       component: <PermissionsPanel permissions={permissions}/>
     },
     {
-      label: 'Utilisateurs',
+      label: 'Utilisateurs (0)',
       component: <UsersPanel />
     },
   ], [role, permissions]);
