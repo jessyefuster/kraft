@@ -34,3 +34,5 @@ export interface RoleEditBody {
 }
 
 export type RoleEditResponse = RoleDTO;
+
+export type RolePermissionsGetResponse = Array<PermissionDTO>;

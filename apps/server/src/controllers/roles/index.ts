@@ -1,4 +1,4 @@
-import type { RoleEditBody, RoleEditResponse, RoleGetResponse, RolesCreateBody, RolesCreateResponse, RolesListResponse } from '@internal/types';
+import type { RoleEditBody, RoleEditResponse, RoleGetResponse, RolePermissionsGetResponse, RolesCreateBody, RolesCreateResponse, RolesListResponse } from '@internal/types';
 import type { Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import { In } from 'typeorm';
@@ -122,10 +122,29 @@ const updateOne = async (req: TypedRequestBody<RoleEditBody>, res: Response<Role
     res.status(200).send(createRoleDTOFromEntity(roleEntity));
 };
 
+const getRolePermissions = async (req: Request, res: Response<RolePermissionsGetResponse>) => {
+    const { id } = validateGetParams(req.params);
+
+    const roleRepo = AppDataSource.getRepository(RoleEntity);
+    const roleEntity = await roleRepo.findOne({
+        where: { id },
+        relations: { permissions: { group: true } }
+    });
+
+    if (!roleEntity) {
+        throw createHttpError(404, 'Cannot find role');
+    }
+
+    const role = createRoleDTOFromEntity(roleEntity);
+
+    res.send(role.permissions || []);
+};
+
 export default {
     getAll,
     deleteOne,
     createOne,
     getOne,
-    updateOne
+    updateOne,
+    getRolePermissions
 };
