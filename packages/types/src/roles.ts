@@ -43,3 +43,6 @@ export interface RolePermissionsUpdateBody {
 
 export type RolePermissionsUpdateResponse = RolePermissionsGetResponse;
 
+export type RolePermissionsAddBody = RolePermissionsUpdateBody;
+
+export type RolePermissionsAddResponse = RolePermissionsGetResponse;

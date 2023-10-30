@@ -1,4 +1,4 @@
-import type { RoleEditBody, RoleEditResponse, RoleGetResponse, RolePermissionsGetResponse, RolePermissionsUpdateResponse, RolesCreateBody, RolesCreateResponse, RolesListResponse } from '@internal/types';
+import type { RoleEditBody, RoleEditResponse, RoleGetResponse, RolePermissionsAddResponse, RolePermissionsGetResponse, RolePermissionsUpdateResponse, RolesCreateBody, RolesCreateResponse, RolesListResponse } from '@internal/types';
 import type { Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import { In } from 'typeorm';
@@ -140,6 +140,45 @@ const getPermissions = async (req: Request, res: Response<RolePermissionsGetResp
     res.send(role.permissions || []);
 };
 
+const addPermissions = async (req: Request, res: Response<RolePermissionsAddResponse>) => {
+    const { params: { id }, body: { permissionsIds } } = validatePermissionsUpdatePayload(req.params, req.body);
+
+    const roleRepo = AppDataSource.getRepository(RoleEntity);
+    const roleEntity = await roleRepo.findOne({
+        where: { id },
+        relations: { permissions: true }
+    });
+
+    if (!roleEntity) {
+        throw createHttpError(404, 'Cannot find role');
+    }
+
+    if (roleEntity.isRoot) {
+        throw createHttpError(405, 'Role is read-only');
+    }
+
+    let permissionEntities: PermissionEntity[] = [];
+
+    if (permissionsIds.length) {
+        const permissionRepo = AppDataSource.getRepository(PermissionEntity);
+        permissionEntities = await permissionRepo.findBy({ id: In(permissionsIds) });
+        if (permissionEntities.length !== permissionsIds.length) {
+            throw createHttpError(422, 'Cannot find permission');
+        }
+    }
+
+    const rolePermissionsEntities = roleEntity.permissions || [];
+    const permissionsEntitiesToAdd = permissionEntities.filter(permission => !rolePermissionsEntities.find(rolePermission => rolePermission.id === permission.id));
+
+    roleEntity.permissions = [...rolePermissionsEntities, ...permissionsEntitiesToAdd];
+
+    await roleRepo.save(roleEntity);
+
+    const role = createRoleDTOFromEntity(roleEntity);
+
+    res.send(role.permissions || []);
+};
+
 const updatePermissions = async (req: Request, res: Response<RolePermissionsUpdateResponse>) => {
     const { params: { id }, body: { permissionsIds } } = validatePermissionsUpdatePayload(req.params, req.body);
 
@@ -182,5 +221,6 @@ export default {
     getOne,
     updateOne,
     getPermissions,
+    addPermissions,
     updatePermissions,
 };

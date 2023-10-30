@@ -5,6 +5,7 @@ import { hasPermissions, isAuthenticated } from '../middlewares/auth';
 
 const router = express.Router();
 
+router.route('/:id/permissions').post(isAuthenticated, hasPermissions(['update:roles']), RolesController.addPermissions);
 router.route('/:id/permissions').get(isAuthenticated, hasPermissions(['read:roles']), RolesController.getPermissions);
 router.route('/:id/permissions').put(isAuthenticated, hasPermissions(['update:roles']), RolesController.updatePermissions);
 router.route('/:id').get(isAuthenticated, hasPermissions(['read:roles']), RolesController.getOne);
