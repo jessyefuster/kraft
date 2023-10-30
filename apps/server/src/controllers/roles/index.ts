@@ -1,4 +1,4 @@
-import type { RoleEditBody, RoleEditResponse, RoleGetResponse, RolePermissionsGetResponse, RolesCreateBody, RolesCreateResponse, RolesListResponse } from '@internal/types';
+import type { RoleEditBody, RoleEditResponse, RoleGetResponse, RolePermissionsGetResponse, RolePermissionsUpdateResponse, RolesCreateBody, RolesCreateResponse, RolesListResponse } from '@internal/types';
 import type { Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import { In } from 'typeorm';
@@ -9,7 +9,7 @@ import { RoleEntity } from '../../entities/role';
 import type { Permission } from '../../models/permissions';
 import { createPermissions } from '../../services/permissions';
 import { createRoleDTOFromEntity, createRoleEntity, createRoles, mapRolesForRolesList } from '../../services/roles';
-import { validateCreateBody, validateDeleteParams, validateGetParams, validateUpdatePayload } from './validators';
+import { validateCreateBody, validateDeleteParams, validateGetParams, validatePermissionsUpdatePayload, validateUpdatePayload } from './validators';
 
 const getAll = async (req: Request, res: Response<RolesListResponse>) => {
     const roleRepo = AppDataSource.getRepository(RoleEntity);
@@ -122,7 +122,7 @@ const updateOne = async (req: TypedRequestBody<RoleEditBody>, res: Response<Role
     res.status(200).send(createRoleDTOFromEntity(roleEntity));
 };
 
-const getRolePermissions = async (req: Request, res: Response<RolePermissionsGetResponse>) => {
+const getPermissions = async (req: Request, res: Response<RolePermissionsGetResponse>) => {
     const { id } = validateGetParams(req.params);
 
     const roleRepo = AppDataSource.getRepository(RoleEntity);
@@ -140,11 +140,47 @@ const getRolePermissions = async (req: Request, res: Response<RolePermissionsGet
     res.send(role.permissions || []);
 };
 
+const updatePermissions = async (req: Request, res: Response<RolePermissionsUpdateResponse>) => {
+    const { params: { id }, body: { permissionsIds } } = validatePermissionsUpdatePayload(req.params, req.body);
+
+    const roleRepo = AppDataSource.getRepository(RoleEntity);
+    const roleEntity = await roleRepo.findOne({
+        where: { id }
+    });
+
+    if (!roleEntity) {
+        throw createHttpError(404, 'Cannot find role');
+    }
+
+    if (roleEntity.isRoot) {
+        throw createHttpError(405, 'Role is read-only');
+    }
+
+    let permissionEntities: PermissionEntity[] = [];
+
+    if (permissionsIds.length) {
+        const permissionRepo = AppDataSource.getRepository(PermissionEntity);
+        permissionEntities = await permissionRepo.findBy({ id: In(permissionsIds) });
+        if (permissionEntities.length !== permissionsIds.length) {
+            throw createHttpError(422, 'Cannot find permission');
+        }
+    }
+
+    roleEntity.permissions = permissionEntities;
+
+    await roleRepo.save(roleEntity);
+
+    const role = createRoleDTOFromEntity(roleEntity);
+
+    res.send(role.permissions || []);
+};
+
 export default {
     getAll,
     deleteOne,
     createOne,
     getOne,
     updateOne,
-    getRolePermissions
+    getPermissions,
+    updatePermissions,
 };
