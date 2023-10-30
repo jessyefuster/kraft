@@ -35,3 +35,17 @@ export const createPermission = (entity: PermissionEntity) => {
 
     return mapper.fromEntity(entity);
 };
+
+export const createPermissionDTO = (permission: Permission) => {
+    const permissionGroupMapper = new PermissionGroupMapper();
+    const mapper = new PermissionMapper(permissionGroupMapper);
+
+    return mapper.toDTO(permission);
+};
+
+export const createPermissionsDTO = (permissions: Permission[]) => {
+    const permissionGroupMapper = new PermissionGroupMapper();
+    const mapper = new PermissionMapper(permissionGroupMapper);
+
+    return permissions.map(permission => mapper.toDTO(permission));
+};
