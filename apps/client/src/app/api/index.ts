@@ -1,11 +1,11 @@
 import type { AnyAction, AsyncThunk } from '@reduxjs/toolkit';
 import { isRejectedWithValue } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { AuthLoginBody, AuthLoginResponse, UserDTO, UsersListResponse, RolesListResponse, RoleDTO, RolesCreateResponse, RolesCreateBody, RoleGetResponse, RoleEditResponse, RoleEditBody, RolePermissionsGetResponse } from '@internal/types';
+import type { AuthLoginBody, AuthLoginResponse, UserDTO, UsersListResponse, RolesListResponse, RoleDTO, RolesCreateResponse, RolesCreateBody, RoleGetResponse, RoleEditResponse, RoleEditBody, RolePermissionsGetResponse, PermissionsListResponse } from '@internal/types';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
-  tagTypes: ['User', 'Role', 'UNAUTHORIZED'],
+  tagTypes: ['User', 'Role', 'Permission', 'UNAUTHORIZED'],
   endpoints: (builder) => ({
     logIn: builder.mutation<AuthLoginResponse, AuthLoginBody>({
       query: (body) => ({
@@ -78,6 +78,12 @@ export const api = createApi({
         ? ['Role', 'UNAUTHORIZED']
         : ['Role']
     }),
+    getPermissions: builder.query<PermissionsListResponse, void>({
+      query: () => '/permissions',
+      providesTags: (result, error) => error?.status === 401
+        ? ['Permission', 'UNAUTHORIZED']
+        : ['Permission']
+    }),
   })
 });
 
@@ -99,5 +105,6 @@ export const {
   useDeleteRoleMutation,
   useCreateRoleMutation,
   useEditRoleMutation,
-  useGetRolePermissionsQuery
+  useGetRolePermissionsQuery,
+  useGetPermissionsQuery
 } = api;
