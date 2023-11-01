@@ -10,6 +10,12 @@ import ButtonWithConfirmDialog from '../../../components/ui/ButtonWithConfirmDia
 import type { Column, TableProps } from '../../../components/ui/Table';
 import Table from '../../../components/ui/Table';
 
+type UserColumn = 'avatar' | 'username' | 'email' | 'role' | 'createdAt' | 'actions';
+
+type UserColumns<T> = {
+  [key in UserColumn]: T;
+};
+
 interface Props {
   users: UserDTO[];
   containerProps?: TableProps['containerProps'];
@@ -37,13 +43,13 @@ const UserTable = ({ users, containerProps }: Props) => {
   const onDeleteUserConfirm = useCallback((userId: string) => deleteUser(userId), [deleteUser]);
 
   const table = useMemo(() => {
-    const columns: Column[] = [
-      { title: undefined, 'aria-label': 'Avatar' },
-      { title: 'Nom d\'utilisateur' },
-      { title: 'E-mail' },
-      { title: 'Rôle' },
-      { title: 'Date de création', align: 'right' },
-      { title: 'Actions', align: 'right' }
+    const columns: Column<UserColumn>[] = [
+      { key: 'avatar', title: undefined, 'aria-label': 'Avatar' },
+      { key: 'username', title: 'Nom d\'utilisateur' },
+      { key: 'email', title: 'E-mail' },
+      { key: 'role', title: 'Rôle' },
+      { key: 'createdAt', title: 'Date de création', align: 'right' },
+      { key: 'actions', title: 'Actions', align: 'right' }
     ];
     const items = users.map(user => ({
       key: user.id,
@@ -55,7 +61,7 @@ const UserTable = ({ users, containerProps }: Props) => {
         createdAt: user.createdAt,
         // eslint-disable-next-line @arthurgeron/react-usememo/require-usememo
         actions: <DeleteUserButton onDeleteConfirm={() => onDeleteUserConfirm(user.id)} />
-      }
+      } as UserColumns<React.ReactNode>
     }));
   
     return {

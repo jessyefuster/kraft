@@ -13,6 +13,12 @@ import ButtonWithConfirmDialog from '../../../components/ui/ButtonWithConfirmDia
 import type { Column, TableProps } from '../../../components/ui/Table';
 import Table from '../../../components/ui/Table';
 
+type RoleColumn = 'name' | 'description' | 'permissions' | 'actions';
+
+type RoleColumns<T> = {
+  [key in RoleColumn]: T;
+};
+
 interface Props {
   roles: RoleDTO[];
   containerProps?: TableProps['containerProps'];
@@ -54,11 +60,11 @@ const RoleTable = ({ roles, containerProps }: Props) => {
   const onDeleteRoleConfirm = useCallback((userId: string) => deleteRole(userId), [deleteRole]);
 
   const table = useMemo(() => {
-    const columns: Column[] = [
-      { title: 'Nom du rôle' },
-      { title: 'Description' },
-      { title: 'Nombre de permissions', align: 'right' },
-      { title: 'Actions', align: 'right' }
+    const columns: Column<RoleColumn>[] = [
+      { key: 'name', title: 'Nom du rôle' },
+      { key: 'description', title: 'Description' },
+      { key: 'permissions', title: 'Nombre de permissions', align: 'right' },
+      { key: 'actions', title: 'Actions', align: 'right' }
     ];
     const items = roles.map(role => ({
       key: role.id,
@@ -71,7 +77,7 @@ const RoleTable = ({ roles, containerProps }: Props) => {
             <DeleteRoleButton onDeleteConfirm={() => onDeleteRoleConfirm(role.id)}/>
             <ViewDetailButton id={role.id} />
           </>
-      }
+      } as RoleColumns<React.ReactNode>
     }));
   
     return {

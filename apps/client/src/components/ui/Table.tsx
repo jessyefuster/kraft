@@ -13,7 +13,9 @@ import { useCallback } from 'react';
 
 type NodeRecord = Record<string, React.ReactNode>;
 
-export interface Column extends TableCellProps {}
+export interface Column<K = string> extends TableCellProps {
+  key: K;
+}
 
 export interface Item<T> {
   key: string;
@@ -32,6 +34,8 @@ const Table = ({ label, columns, items, containerProps }: TableProps) => {
     ({ count }: LabelDisplayedRowsArgs)=> `${count} élément${count > 1 ? 's' : ''}`
   , []);
 
+  const getColumn = (key: string) => columns.find(column => column.key === key);
+
   return (
     <Box
       {...containerProps}
@@ -43,8 +47,8 @@ const Table = ({ label, columns, items, containerProps }: TableProps) => {
         <MuiTable stickyHeader={!!containerProps?.height} aria-label={label}>
           <TableHead>
             <TableRow>
-              {columns.map(column => (
-                <TableCell key={column.title || 'unknown'} {...column}>{column.title}</TableCell>
+              {columns.filter(c => c.hidden !== true).map(({ key, ...rest }) => (
+                <TableCell key={key} {...rest}>{rest.title}</TableCell>
               ))}
             </TableRow>
           </TableHead>
@@ -54,9 +58,13 @@ const Table = ({ label, columns, items, containerProps }: TableProps) => {
                 key={key}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
-                {Object.entries(data).map(([dataKey, value], index) => (
-                  <TableCell key={`item-${key}-column-${dataKey}`} align={columns[index].align}>{value}</TableCell>
-                ))}
+                {Object.entries(data).map(([dataKey, value]) => {
+                  const column = getColumn(dataKey);
+
+                  return column && column.hidden !== true
+                    ? <TableCell key={`item-${key}-column-${dataKey}`} align={column.align}>{value}</TableCell>
+                    : undefined;
+                })}
               </TableRow>
             ))}
           </TableBody>

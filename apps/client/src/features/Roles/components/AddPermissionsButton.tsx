@@ -6,6 +6,14 @@ import { useCallback, useMemo, useState } from 'react';
 import Drawer from '../../../components/ui/Drawer';
 import { useGetPermissionsQuery } from '../../../app/api';
 import PermissionTable from './PermissionTable';
+import type { Props as PermissionTableProps } from './PermissionTable';
+
+const columnsDisplay: PermissionTableProps['columnsDisplay'] = {
+  code: true,
+  description: true,
+  group: false,
+  actions: false
+};
 
 interface Props extends ButtonProps {}
 
@@ -31,7 +39,7 @@ const AddPermissionsButton = ({ ...rest }: Props) => {
         onClose={onDrawerClose}
         size="large"
       >
-        <PermissionTable permissions={permissions} />
+        <PermissionTable permissions={permissions} columnsDisplay={columnsDisplay} />
       </Drawer>
     </>
   );
