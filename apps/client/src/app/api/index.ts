@@ -1,7 +1,7 @@
 import type { AnyAction, AsyncThunk } from '@reduxjs/toolkit';
 import { isRejectedWithValue } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { AuthLoginBody, AuthLoginResponse, UserDTO, UsersListResponse, RolesListResponse, RoleDTO, RolesCreateResponse, RolesCreateBody, RoleGetResponse, RoleEditResponse, RoleEditBody, RolePermissionsGetResponse, PermissionsListResponse } from '@internal/types';
+import type { AuthLoginBody, AuthLoginResponse, UserDTO, UsersListResponse, RolesListResponse, RoleDTO, RolesCreateResponse, RolesCreateBody, RoleGetResponse, RoleEditResponse, RoleEditBody, RolePermissionsGetResponse, PermissionsListResponse, RolePermissionsUpdateResponse, RolePermissionsUpdateBody, RolePermissionsAddResponse, RolePermissionsAddBody } from '@internal/types';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
@@ -78,6 +78,22 @@ export const api = createApi({
         ? ['Role', 'UNAUTHORIZED']
         : ['Role']
     }),
+    updateRolePermissions: builder.mutation<RolePermissionsUpdateResponse, { id: RoleDTO['id']; body: RolePermissionsUpdateBody }>({
+      query: ({ id, body = undefined }) => ({
+        url: `/roles/${id}/permissions`,
+        method: 'PUT',
+        body
+      }),
+      invalidatesTags: ['Role']
+    }),
+    addRolePermissions: builder.mutation<RolePermissionsAddResponse, { id: RoleDTO['id']; body: RolePermissionsAddBody }>({
+      query: ({ id, body = undefined }) => ({
+        url: `/roles/${id}/permissions`,
+        method: 'POST',
+        body
+      }),
+      invalidatesTags: ['Role']
+    }),
     getPermissions: builder.query<PermissionsListResponse, void>({
       query: () => '/permissions',
       providesTags: (result, error) => error?.status === 401
@@ -106,5 +122,7 @@ export const {
   useCreateRoleMutation,
   useEditRoleMutation,
   useGetRolePermissionsQuery,
+  useUpdateRolePermissionsMutation,
+  useAddRolePermissionsMutation,
   useGetPermissionsQuery
 } = api;

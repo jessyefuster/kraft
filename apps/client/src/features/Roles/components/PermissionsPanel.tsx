@@ -1,25 +1,32 @@
-import type { PermissionDTO } from '@internal/types';
+import type { PermissionDTO, RoleDTO } from '@internal/types';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-import AddPermissionsButton from './AddPermissionsButton';
-import PermissionTable from './PermissionTable';
 import StateIllustration from '../../../components/ui/StateIllustration';
+import Table from '../../../components/ui/Table';
+import { usePermissionTableData } from '../hooks/usePermissionTableData';
+import AddPermissionsButton from './AddPermissionsButton';
 
 interface Props {
+  roleId: RoleDTO['id'];
   permissions?: PermissionDTO[];
 }
 
-// eslint-disable-next-line arrow-body-style
-const PermissionsPanel = ({ permissions }: Props) => {
+const PermissionsPanel = ({ roleId, permissions }: Props) => {
+  const tableData = usePermissionTableData(roleId, permissions || []);
+
   return permissions?.length
     ? <>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Typography>Ajouter des permissions à ce rôle. Les utilisateurs qui possèdent ce rôle bénéficieront immédiatement des permissions présentes ci-dessous.</Typography>
-          <AddPermissionsButton sx={{ marginLeft: 2, flexShrink: 0 }} />
+          <Typography>Ajouter ou supprimer des permissions au rôle. Les utilisateurs qui possèdent ce rôle bénéficieront immédiatement des modifications.</Typography>
+          <AddPermissionsButton roleId={roleId} rolePermissions={permissions} sx={{ marginLeft: 2, flexShrink: 0 }} />
         </Box>
-        <Box sx={{ flex: 1, position: 'relative', marginTop: 4 }} >
-          <PermissionTable permissions={permissions} containerProps={{ height: '100%', position: 'absolute' }} />
+        <Box sx={{ flex: 1, position: 'relative', marginTop: 4 }}>
+          <Table
+            label="Liste des permissions"
+            containerProps={{ height: '100%', position: 'absolute' }}
+            {...tableData}
+          />
         </Box>
       </>
     : (
@@ -28,7 +35,7 @@ const PermissionsPanel = ({ permissions }: Props) => {
         title="C'est vide !"
         message="Aucune permission associée au rôle"
       >
-        <AddPermissionsButton />
+        <AddPermissionsButton roleId={roleId} rolePermissions={permissions} />
       </StateIllustration>
     )
   ;

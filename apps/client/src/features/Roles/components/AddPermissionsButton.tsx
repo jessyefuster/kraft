@@ -1,45 +1,75 @@
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import type { RoleDTO } from '@internal/types';
+import EditIcon from '@mui/icons-material/Edit';
 import type { ButtonProps } from '@mui/material/Button';
 import Button from '@mui/material/Button';
 import { useCallback, useMemo, useState } from 'react';
 
+import { useAddRolePermissionsMutation, useGetPermissionsQuery } from '../../../app/api';
 import Drawer from '../../../components/ui/Drawer';
-import { useGetPermissionsQuery } from '../../../app/api';
-import PermissionTable from './PermissionTable';
-import type { Props as PermissionTableProps } from './PermissionTable';
+import Table from '../../../components/ui/Table';
+import type { ColumnsDisplay } from '../hooks/usePermissionTableData';
+import { usePermissionTableData } from '../hooks/usePermissionTableData';
 
-const columnsDisplay: PermissionTableProps['columnsDisplay'] = {
+const columnsDisplay: ColumnsDisplay = {
   code: true,
   description: true,
   group: false,
   actions: false
 };
 
-interface Props extends ButtonProps {}
+interface Props extends ButtonProps {
+  roleId: RoleDTO['id'];
+  rolePermissions?: RoleDTO['permissions'];
+  label?: string;
+}
 
-const AddPermissionsButton = ({ ...rest }: Props) => {
-  const { data: permissions = [] } = useGetPermissionsQuery();
+const AddPermissionsButton = ({ roleId, rolePermissions = [], label = 'Ajouter des permissions', ...rest }: Props) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [addRolePermissions] = useAddRolePermissionsMutation();
+  const { data: permissions = [] } = useGetPermissionsQuery();
+  const notInRolePermissions = useMemo(() =>
+    permissions.filter(permission => !rolePermissions.find(rolePermission => rolePermission.id === permission.id))
+  , [permissions, rolePermissions]);
+  const tableData = usePermissionTableData(roleId, notInRolePermissions, columnsDisplay);
   const onClick = useCallback(() => setIsFormOpen(true), []);
   const onDrawerClose = useCallback(() => setIsFormOpen(false), []);
+  const onSelectionChange = (ids: string[]) => setSelectedPermissions(ids);
+
+  const handleConfirm = useCallback(() => {
+    void addRolePermissions({
+      id: roleId,
+      body: {
+        permissionsIds: selectedPermissions
+      }
+    });
+  }
+  , [roleId, selectedPermissions, addRolePermissions]);
 
   return (
     <>
       <Button
         {...rest}
         variant="contained"
-        startIcon={useMemo(() => <AddCircleOutlineIcon />, [])}
+        startIcon={useMemo(() => <EditIcon />, [])}
         onClick={onClick}
       >
-        Ajouter des permissions
+        {label}
       </Button>
       <Drawer
-        title="Ajouter des permissions"
+        title={label}
         isOpen={isFormOpen}
         onClose={onDrawerClose}
+        onConfirm={handleConfirm}
         size="large"
       >
-        <PermissionTable permissions={permissions} columnsDisplay={columnsDisplay} />
+        <Table
+          label="Permissions à modifier"
+          showPagination={false}
+          selectable
+          onSelectionChange={onSelectionChange}
+          {...tableData}
+        />
       </Drawer>
     </>
   );

@@ -4,6 +4,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import type { MouseEvent } from 'react';
 import { useCallback } from 'react';
 
 export interface Props {
@@ -27,9 +28,16 @@ const ConfirmDialog = ({
   confirmText = 'OK',
   confirmType = 'default'
 }: Props) => {
-  const onDialogClose = useCallback(() => onClose(), [onClose]);
-  const onDialogCancel = useCallback(() => onClose(false), [onClose]);
-  const onDialogConfirm = useCallback(() => {
+  const onDialogClose = useCallback((event: Event) => {
+    event.stopPropagation();
+    onClose();
+  }, [onClose]);
+  const onDialogCancel = useCallback((event: MouseEvent) => {
+    event.stopPropagation();
+    onClose(false);
+  }, [onClose]);
+  const onDialogConfirm = useCallback((event: MouseEvent) => {
+    event.stopPropagation();
     onClose(true);
     onConfirm && onConfirm();
   }, [onClose, onConfirm]);
