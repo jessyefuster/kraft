@@ -1,7 +1,7 @@
 import type { SxProps } from '@mui/material';
-import { Box, Typography } from '@mui/material';
 
 import Page from '../components/layout/Page';
+import StateIllustration from '../components/ui/StateIllustration';
 import { useAuth } from '../features/Auth/hooks/useAuth';
 
 const pageSxProps: SxProps = {
@@ -15,9 +15,12 @@ const HomePage = () => {
 
   return (
     <Page sx={pageSxProps}>
-      <Box>
-        <Typography variant="h2" marginBottom={4}>Bienvenue {auth.user?.username}</Typography>
-      </Box>
+      <StateIllustration
+        state="location"
+        title={`Bienvenue ${auth.user?.username}`}
+        message="Il n'y rien à faire ici pour le moment"
+        compensateImageOffset={true}
+      />
     </Page>
   );
 };

@@ -2,12 +2,13 @@
 import type { RoleDTO } from '@internal/types';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import InputLabel from '@mui/material/InputLabel';
 import { styled } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 
 import Form from '../../../components/forms/Form';
 import TextInput from '../../../components/forms/TextInput';
-import { useCreateRoleForm } from '../hooks/useCreateRoleForm';
+import { useEditRoleForm } from '../hooks/useEditRoleForm';
 
 const ActionsContainer = styled(Box)({
   display: 'flex',
@@ -16,31 +17,35 @@ const ActionsContainer = styled(Box)({
 });
 
 interface Props {
-  onBackClick: () => void;
-  onSubmitSuccess: (role: RoleDTO) => void;
+  role?: RoleDTO;
+  onSubmitSuccess?: (role: RoleDTO) => void;
 }
 
-const CreateRoleForm = ({ onBackClick, onSubmitSuccess }: Props) => {
-  const { form, requiredFields, isLoading, submitHandler } = useCreateRoleForm();
+const EditRoleDetailsForm = ({ role, onSubmitSuccess }: Props) => {
+  const { form, requiredFields, isLoading, submitHandler } = useEditRoleForm(role?.id || '', { defaultValues: role });
 
   return (
     <Form form={form} onSubmit={submitHandler} onSubmitSuccess={onSubmitSuccess}>
+      <InputLabel>
+        <Typography variant="subtitle1">Nom</Typography>
+      </InputLabel>
       <TextInput
-        label="Nom du rôle"
         name="name"
         control={form.control}
         required={requiredFields.name}
-        sx={{ mt: 2 }}
+        sx={{ mt: 1 }}
       />
+      <InputLabel sx={{ mt: 2 }}>
+        <Typography variant="subtitle1">Description</Typography>
+      </InputLabel>
       <TextInput
-        label="Description"
+        placeholder="Description de ce rôle..."
         name="description"
         control={form.control}
         required={requiredFields.description}
-        sx={{ mt: 2 }}
+        sx={{ mt: 1 }}
       />
       <ActionsContainer>
-        <Button onClick={onBackClick}>Retour</Button>
         <LoadingButton
           loading={isLoading}
           type="submit"
@@ -54,4 +59,4 @@ const CreateRoleForm = ({ onBackClick, onSubmitSuccess }: Props) => {
   );
 };
   
-export default CreateRoleForm;
+export default EditRoleDetailsForm;

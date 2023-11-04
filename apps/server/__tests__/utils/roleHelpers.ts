@@ -16,9 +16,9 @@ export type TestRoleProps = Partial<
     }
 >;
 
-export const getPermissions = async (codes: AnyPermission[]) => {
+export const getPermissions = async (codes?: AnyPermission[]) => {
     const permissionsRepo = AppDataSource.getRepository(PermissionEntity);
-    const permissionEntities = await permissionsRepo.findBy({ code: In(codes) });
+    const permissionEntities = await permissionsRepo.findBy({ code: codes && In(codes) });
 
     return permissionEntities;
 };
@@ -44,10 +44,10 @@ export const createTestRole = async (testRole?: TestRoleProps, isRoot: boolean =
     return roleEntity;
 };
 
-export const getRole = async (name: string) => {
+export const getRole = async ({ name, id }: { name?: string; id?: string }) => {
     const roleRepo = AppDataSource.getRepository(RoleEntity);
 
-    return await roleRepo.findOne({ where: { name }, relations: { permissions: true } });
+    return await roleRepo.findOne({ where: { name, id }, relations: { permissions: true } });
 };
 
 export const getRootRole = async () => {

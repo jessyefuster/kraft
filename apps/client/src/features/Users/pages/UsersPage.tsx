@@ -4,7 +4,8 @@ import Typography from '@mui/material/Typography';
 
 import { useGetUsersQuery } from '../../../app/api';
 import Page from '../../../components/layout/Page';
-import UserTable from '../components/UserTable';
+import Table from '../../../components/ui/Table';
+import { useUserTableData } from '../hooks/useUserTableData';
 
 const Header = styled(Box)({
   display: 'flex',
@@ -17,7 +18,8 @@ interface Props {
 }
 
 const UsersPage = ({ title }: Props) => {
-  const { data: users } = useGetUsersQuery();
+  const { data: users = [] } = useGetUsersQuery();
+  const tableData = useUserTableData(users);
 
   return (
     <Page padding={4}>
@@ -25,9 +27,13 @@ const UsersPage = ({ title }: Props) => {
         <Typography variant="h4">{title}</Typography>
         <Button variant="contained" startIcon={<AddCircleOutlineIcon />}>Nouvel utilisateur</Button>
       </Header>
-      {users && (
+      {!!users.length && (
         <Box flex={1} marginTop={4} position={'relative'}>
-          <UserTable users={users} containerProps={{ position: 'absolute', height: '100%' }} />
+          <Table
+            {...tableData}
+            label="Liste des utilisateurs"
+            containerProps={{ position: 'absolute', height: '100%' }}
+          />
         </Box>
       )}
     </Page>

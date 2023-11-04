@@ -11,7 +11,8 @@ interface Props<TFieldValues extends FieldValues, U> {
 
 const StyledForm = styled('form')({
   display: 'flex',
-  flexDirection: 'column'
+  flexDirection: 'column',
+  maxWidth: 500
 });
 
 const Form = <T extends FieldValues, U>({ form, onSubmit, onSubmitSuccess, children }: PropsWithChildren<Props<T, U>>) => {

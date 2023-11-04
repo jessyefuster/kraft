@@ -11,3 +11,5 @@ export interface PermissionDTO {
     description?: string;
     group?: PermissionGroupDTO;
 }
+
+export type PermissionsListResponse = Array<PermissionDTO>;

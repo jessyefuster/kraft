@@ -7,6 +7,7 @@ import { ALL_PERMISSIONS } from '../../src/models/permissions';
 import { getRootRole } from '../utils/roleHelpers';
 import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 import { createTestUser } from '../utils/userHelpers';
+import { fakeUUID } from '../utils/uuid';
 
 let server: Server;
 
@@ -121,6 +122,11 @@ describe('Users routes', () => {
         const invalidRoleRes = await agent.post('/api/users').send({ username, email, password, roleId: 'fake' });
 
         expect(invalidRoleRes.statusCode).toEqual(422);
+
+        // Inexistent role
+        const invalidRoleRes2 = await agent.post('/api/users').send({ username, email, password, roleId: fakeUUID });
+
+        expect(invalidRoleRes2.statusCode).toEqual(422);
     });
 
     test('User creation fails if username or email already exists', async () => {
@@ -237,6 +243,10 @@ describe('Users routes', () => {
         const res = await agent.delete('/api/users/fakeUserId');
 
         expect(res.statusCode).toEqual(404);
+
+        const res2 = await agent.delete(`/api/users/${fakeUUID}`);
+
+        expect(res2.statusCode).toEqual(404);
     });
 
     test('Delete a user', async () => {

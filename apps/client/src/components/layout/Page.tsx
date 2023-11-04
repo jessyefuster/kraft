@@ -22,7 +22,7 @@ const Container = styled(Box)({
   display: 'flex'
 });
 
-interface Props extends PropsWithChildren, BoxProps {
+export interface Props extends PropsWithChildren, BoxProps {
   showAppBar?: boolean;
   showDrawer?: boolean;
   orientation?: 'row' | 'column';
