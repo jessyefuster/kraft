@@ -16,9 +16,9 @@ export type TestRoleProps = Partial<
     }
 >;
 
-export const getPermissions = async (codes: AnyPermission[]) => {
+export const getPermissions = async (codes?: AnyPermission[]) => {
     const permissionsRepo = AppDataSource.getRepository(PermissionEntity);
-    const permissionEntities = await permissionsRepo.findBy({ code: In(codes) });
+    const permissionEntities = await permissionsRepo.findBy({ code: codes && In(codes) });
 
     return permissionEntities;
 };

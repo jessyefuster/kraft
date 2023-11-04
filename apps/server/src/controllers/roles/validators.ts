@@ -5,10 +5,7 @@ import isUUID from 'validator/lib/isUUID';
 export const validateDeleteParams = (params: Partial<RolesDeleteParams>) => {
     const { id } = params;
 
-    if (!id) {
-        throw createHttpError(400, 'Role id required');
-    }
-    if (!isUUID(id, '4')) {
+    if (!id || !isUUID(id, '4')) {
         throw createHttpError(404, 'Cannot find role');
     }
 
@@ -34,10 +31,7 @@ export const validateCreateBody = (body: Partial<RolesCreateBody>) => {
 export const validateGetParams = (params: Partial<RoleGetParams>) => {
     const { id } = params;
 
-    if (!id) {
-        throw createHttpError(400, 'Role id required');
-    }
-    if (!isUUID(id, '4')) {
+    if (!id || !isUUID(id, '4')) {
         throw createHttpError(404, 'Cannot find role');
     }
 
