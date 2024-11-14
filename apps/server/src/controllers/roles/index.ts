@@ -136,8 +136,9 @@ const getPermissions = async (req: Request, res: Response<RolePermissionsGetResp
     }
 
     const role = createRoleDTOFromEntity(roleEntity);
+    const rolePermissions = role.permissions ?? [];
 
-    res.send(role.permissions || []);
+    res.send(rolePermissions);
 };
 
 const addPermissions = async (req: Request, res: Response<RolePermissionsAddResponse>) => {
@@ -176,7 +177,7 @@ const addPermissions = async (req: Request, res: Response<RolePermissionsAddResp
 
     const role = createRoleDTOFromEntity(roleEntity);
 
-    res.send(role.permissions || []);
+    res.send(role.permissions ?? []);
 };
 
 const updatePermissions = async (req: Request, res: Response<RolePermissionsUpdateResponse>) => {
@@ -211,7 +212,7 @@ const updatePermissions = async (req: Request, res: Response<RolePermissionsUpda
 
     const role = createRoleDTOFromEntity(roleEntity);
 
-    res.send(role.permissions || []);
+    res.send(role.permissions ?? []);
 };
 
 export default {
