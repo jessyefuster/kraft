@@ -1,9 +1,10 @@
 import type { UserDTO } from '@internal/types';
-import Avatar from '@mui/material/Avatar';
 import { useMemo } from 'react';
+import Avatar from 'boring-avatars';
 
-import type { Column } from '../../../components/ui/Table';
 import AutoColoredChip from '../../../components/ui/AutoColoredChip';
+import type { Column } from '../../../components/ui/Table';
+import { avatarColors } from '../../../theme/theme';
 import DeleteUserButton from '../components/DeleteUserButton';
 
 type UserColumn = 'avatar' | 'username' | 'email' | 'role' | 'createdAt' | 'actions';
@@ -28,7 +29,7 @@ export const useUserTableData = (users: UserDTO[]) => {
       id: user.id,
       primaryColumn: 'username' as UserColumn,
       data: {
-        avatar: <Avatar>{user.username[0].toUpperCase()}</Avatar>,
+        avatar: <Avatar name={user.username} size={30} variant="beam" colors={avatarColors} />,
         username: user.username,
         email: user.email,
         role: user.role && <AutoColoredChip label={user.role.name} labelStr={user.role.name} variant="outlined" />,

@@ -75,3 +75,5 @@ export const themeOptions: ThemeOptions = {
     }
   }
 };
+
+export const avatarColors = ['#4256b0', '#824fae', '#bd66cd', '#e6ddff', '#e8e8f8'];
