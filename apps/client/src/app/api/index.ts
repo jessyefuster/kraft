@@ -1,11 +1,11 @@
 import type { AnyAction, AsyncThunk } from '@reduxjs/toolkit';
 import { isRejectedWithValue } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { AuthLoginBody, AuthLoginResponse, UserDTO, UsersListResponse, RolesListResponse, RoleDTO, RolesCreateResponse, RolesCreateBody } from '@internal/types';
+import type { AuthLoginBody, AuthLoginResponse, UserDTO, UsersListResponse, RolesListResponse, RoleDTO, RolesCreateResponse, RolesCreateBody, RoleGetResponse, RoleEditResponse, RoleEditBody, RolePermissionsGetResponse, PermissionsListResponse, RolePermissionsUpdateResponse, RolePermissionsUpdateBody, RolePermissionsAddResponse, RolePermissionsAddBody } from '@internal/types';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
-  tagTypes: ['User', 'Role', 'UNAUTHORIZED'],
+  tagTypes: ['User', 'Role', 'Permission', 'UNAUTHORIZED'],
   endpoints: (builder) => ({
     logIn: builder.mutation<AuthLoginResponse, AuthLoginBody>({
       query: (body) => ({
@@ -43,6 +43,12 @@ export const api = createApi({
         ? ['Role', 'UNAUTHORIZED']
         : ['Role']
     }),
+    getRole: builder.query<RoleGetResponse, RoleDTO['id']>({
+      query: (id) => `/roles/${id}`,
+      providesTags: (result, error) => error?.status === 401
+        ? ['Role', 'UNAUTHORIZED']
+        : ['Role']
+    }),
     deleteRole: builder.mutation<unknown, RoleDTO['id']>({
       query: (id) => ({
         url: `/roles/${id}`,
@@ -57,6 +63,42 @@ export const api = createApi({
         body
       }),
       invalidatesTags: ['Role']
+    }),
+    editRole: builder.mutation<RoleEditResponse, { id: RoleDTO['id']; body: RoleEditBody }>({
+      query: ({ id, body = undefined }) => ({
+        url: `/roles/${id}`,
+        method: 'PATCH',
+        body
+      }),
+      invalidatesTags: ['Role']
+    }),
+    getRolePermissions: builder.query<RolePermissionsGetResponse, RoleDTO['id']>({
+      query: (id) => `/roles/${id}/permissions`,
+      providesTags: (result, error) => error?.status === 401
+        ? ['Role', 'UNAUTHORIZED']
+        : ['Role']
+    }),
+    updateRolePermissions: builder.mutation<RolePermissionsUpdateResponse, { id: RoleDTO['id']; body: RolePermissionsUpdateBody }>({
+      query: ({ id, body = undefined }) => ({
+        url: `/roles/${id}/permissions`,
+        method: 'PUT',
+        body
+      }),
+      invalidatesTags: ['Role']
+    }),
+    addRolePermissions: builder.mutation<RolePermissionsAddResponse, { id: RoleDTO['id']; body: RolePermissionsAddBody }>({
+      query: ({ id, body = undefined }) => ({
+        url: `/roles/${id}/permissions`,
+        method: 'POST',
+        body
+      }),
+      invalidatesTags: ['Role']
+    }),
+    getPermissions: builder.query<PermissionsListResponse, void>({
+      query: () => '/permissions',
+      providesTags: (result, error) => error?.status === 401
+        ? ['Permission', 'UNAUTHORIZED']
+        : ['Permission']
     }),
   })
 });
@@ -75,6 +117,12 @@ export const {
   useGetUsersQuery,
   useDeleteUserMutation,
   useGetRolesQuery,
+  useGetRoleQuery,
   useDeleteRoleMutation,
   useCreateRoleMutation,
+  useEditRoleMutation,
+  useGetRolePermissionsQuery,
+  useUpdateRolePermissionsMutation,
+  useAddRolePermissionsMutation,
+  useGetPermissionsQuery
 } = api;

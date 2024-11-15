@@ -21,3 +21,28 @@ export interface RolesDeleteParams {
 }
 
 export type RolesListResponse = Array<RoleDTO>;
+
+export interface RoleGetParams {
+    id: string;
+}
+
+export type RoleGetResponse = RoleDTO;
+
+export interface RoleEditBody {
+    name?: string;
+    description?: string | null;
+}
+
+export type RoleEditResponse = RoleDTO;
+
+export type RolePermissionsGetResponse = Array<PermissionDTO>;
+
+export interface RolePermissionsUpdateBody {
+    permissionsIds: Array<PermissionDTO['id']>;
+}
+
+export type RolePermissionsUpdateResponse = RolePermissionsGetResponse;
+
+export type RolePermissionsAddBody = RolePermissionsUpdateBody;
+
+export type RolePermissionsAddResponse = RolePermissionsGetResponse;

@@ -42,10 +42,7 @@ export const validateCreateBody = (body: Partial<UsersCreateBody>) => {
 export const validateDeleteParams = (params: Partial<UsersDeleteParams>) => {
     const { id } = params;
 
-    if (!id) {
-        throw createHttpError(400, 'User id required');
-    }
-    if (!isUUID(id, '4')) {
+    if (!id || !isUUID(id, '4')) {
         throw createHttpError(404, 'Cannot find user');
     }
 
