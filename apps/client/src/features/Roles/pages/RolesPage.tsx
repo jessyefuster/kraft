@@ -28,7 +28,7 @@ const RolesPage = ({ title }: Props) => {
   const onCreateRole = useCallback((role: RoleDTO) => navigate(role.id), [navigate]);
 
   return (
-    <Page padding={4}>
+    <Page title={title} padding={4}>
       <Header>
         <Typography variant="h4">{title}</Typography>
         <CreateRoleButton onCreateRole={onCreateRole}/>

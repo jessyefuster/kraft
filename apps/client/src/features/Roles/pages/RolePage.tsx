@@ -44,7 +44,7 @@ const RolePage = () => {
   ], []);
 
   return (
-    <Page padding={4}>
+    <Page title={role ? 'Rôle ' + role.name : 'Rôle introuvable'} padding={4}>
       <Button
         onClick={onBackButtonClick}
         sx={{ padding: '8px', alignSelf: 'start' }}

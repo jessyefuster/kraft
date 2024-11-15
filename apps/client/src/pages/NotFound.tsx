@@ -19,7 +19,7 @@ interface Props extends Pick<PageProps, 'showAppBar' | 'showDrawer'> {
 // eslint-disable-next-line arrow-body-style
 const NotFoundPage = ({ title = 'Page introuvable', showAppBar = true, showDrawer = false }: Props) => {
   return (
-    <Page showAppBar={showAppBar} showDrawer={showDrawer} sx={pageSxProps}>
+    <Page title={title} showAppBar={showAppBar} showDrawer={showDrawer} sx={pageSxProps}>
       <StateIllustration
         state="search"
         title={title}

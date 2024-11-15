@@ -1,6 +1,6 @@
 import type { BoxProps } from '@mui/material';
 import { Box, styled } from '@mui/material';
-import type { PropsWithChildren } from 'react';
+import { useEffect, type PropsWithChildren } from 'react';
 
 import AppBar from './AppBar';
 import NavigationDrawer from './NavigationDrawer';
@@ -28,8 +28,12 @@ export interface Props extends PropsWithChildren, BoxProps {
   orientation?: 'row' | 'column';
 }
 
-// eslint-disable-next-line arrow-body-style
-const Page = ({ orientation = 'column', showAppBar = true, showDrawer = true, children, ...rest }: Props) => {
+const Page = ({ orientation = 'column', showAppBar = true, showDrawer = true, title, children, ...rest }: Props) => {
+
+  useEffect(() => {
+    document.title = title ? `${title} - Kraft` : 'Kraft';
+  }, [title]);  
+
   return (
     <Container>
       {showAppBar && <AppBar />}

@@ -22,7 +22,7 @@ const UsersPage = ({ title }: Props) => {
   const tableData = useUserTableData(users);
 
   return (
-    <Page padding={4}>
+    <Page title={title} padding={4}>
       <Header>
         <Typography variant="h4">{title}</Typography>
         <Button variant="contained" startIcon={<AddCircleOutlineIcon />}>Nouvel utilisateur</Button>

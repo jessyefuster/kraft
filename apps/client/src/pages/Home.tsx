@@ -10,11 +10,15 @@ const pageSxProps: SxProps = {
   textAlign: 'center'
 };
 
-const HomePage = () => {
+interface Props {
+  title?: string;
+}
+
+const HomePage = ({ title }: Props) => {
   const auth = useAuth();
 
   return (
-    <Page sx={pageSxProps}>
+    <Page title={title} sx={pageSxProps}>
       <StateIllustration
         state="location"
         title={`Bienvenue ${auth.user?.username}`}

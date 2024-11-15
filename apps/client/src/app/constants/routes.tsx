@@ -15,7 +15,7 @@ import type { Route } from '../models/route';
 export const routes: Route[] = [
   {
     path: '/login',
-    element: <LoginPage />,
+    element: <LoginPage title="Connexion" />,
     meta: {
       title: 'Connexion'
     }
@@ -30,7 +30,7 @@ export const routes: Route[] = [
       },
       {
         path: 'apps',
-        element: <HomePage />,
+        element: <HomePage title="Accueil" />,
         meta: {
           title: 'Apps',
           iconElement: <LayersRoundedIcon />
@@ -38,7 +38,7 @@ export const routes: Route[] = [
       },
       {
         path: 'users',
-        element: <UsersPage title={'Utilisateurs'} />,
+        element: <UsersPage title="Utilisateurs" />,
         meta: {
           title: 'Utilisateurs',
           iconElement: <PeopleRoundedIcon />
@@ -53,7 +53,7 @@ export const routes: Route[] = [
         children: [
           {
             index: true,
-            element: <RolesPage title={'Rôles'} />
+            element: <RolesPage title="Rôles" />
           },
           {
             path: ':id',

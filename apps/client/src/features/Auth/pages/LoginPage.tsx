@@ -22,10 +22,14 @@ const CoverImage = styled('img')({
   height: '100%'
 });
 
+interface Props {
+  title?: string;
+}
+
 // eslint-disable-next-line arrow-body-style
-const LoginPage = () => {
+const LoginPage = ({ title }: Props) => {
   return (
-    <Page orientation="row" showAppBar={false} showDrawer={false}>
+    <Page title={title} orientation="row" showAppBar={false} showDrawer={false}>
       <ImageContainer flex={1}>
         <CoverImage src={loginIllustrationUrl} />
       </ImageContainer>
