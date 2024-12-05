@@ -12,8 +12,10 @@ export interface UsersCreateBody {
   username: string;
   email: string;
   password: string;
-  roleId: string;
+  roleId?: string;
 }
+
+export type UsersCreateResponse = UserDTO;
 
 export interface UsersDeleteParams {
   id: string;

@@ -1,15 +1,16 @@
+import type { UsersCreateBody, UsersCreateResponse, UsersListResponse } from '@internal/types';
 import type { Request, Response } from 'express';
 import createHttpError from 'http-errors';
-import type { UsersCreateBody, UsersListResponse } from '@internal/types';
 
 import { AppDataSource } from '../../data-source';
 import { RoleEntity } from '../../entities/role';
 import { UserEntity } from '../../entities/user';
+import type { Role } from '../../models/roles';
 import { createRole } from '../../services/roles';
 import { createUserDTOFromEntity, createUserEntity, userHasPermissions } from '../../services/user';
 import { validateCreateBody, validateDeleteParams } from './validators';
 
-const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response) => {
+const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response<UsersCreateResponse>) => {
     const { username, email, password, roleId } = validateCreateBody(req.body);
 
     // Create a query runner to control the transactions, it allows to cancel the transaction if we need to
@@ -35,13 +36,16 @@ const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response) => 
             throw createHttpError(409, 'Email already exists');
         }
 
-        const roleRepo = queryRunner.manager.getRepository(RoleEntity);
-        const roleEntity = await roleRepo.findOneBy({ id: roleId });
-        if (!roleEntity) {
-            throw createHttpError(422, 'Cannot find role');
-        }
+        let role: Role | undefined;
 
-        const role = createRole(roleEntity);
+        if (roleId) {
+            const roleRepo = queryRunner.manager.getRepository(RoleEntity);
+            const roleEntity = await roleRepo.findOneBy({ id: roleId });
+            if (!roleEntity) {
+                throw createHttpError(422, 'Cannot find role');
+            }
+            role = createRole(roleEntity);
+        }
 
         const newUser = createUserEntity({
             username,
@@ -55,7 +59,7 @@ const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response) => 
         // No exceptions occured, so we commit the transaction
         await queryRunner.commitTransaction();
 
-        res.send(newUser.id);
+        res.status(201).send(createUserDTOFromEntity(newUser));
     } catch (err) {
         // As an exception occured, cancel the transaction
         await queryRunner.rollbackTransaction();
