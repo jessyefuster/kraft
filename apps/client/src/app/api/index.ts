@@ -1,7 +1,27 @@
 import type { AnyAction, AsyncThunk } from '@reduxjs/toolkit';
 import { isRejectedWithValue } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { AuthLoginBody, AuthLoginResponse, UserDTO, UsersListResponse, RolesListResponse, RoleDTO, RolesCreateResponse, RolesCreateBody, RoleGetResponse, RoleEditResponse, RoleEditBody, RolePermissionsGetResponse, PermissionsListResponse, RolePermissionsUpdateResponse, RolePermissionsUpdateBody, RolePermissionsAddResponse, RolePermissionsAddBody } from '@internal/types';
+import type {
+  AuthLoginBody,
+  AuthLoginResponse,
+  UserDTO,
+  UsersListResponse,
+  RolesListResponse,
+  RoleDTO,
+  RolesCreateResponse,
+  RolesCreateBody,
+  RoleGetResponse,
+  RoleEditResponse,
+  RoleEditBody,
+  RolePermissionsGetResponse,
+  PermissionsListResponse,
+  RolePermissionsUpdateResponse,
+  RolePermissionsUpdateBody,
+  RolePermissionsAddResponse,
+  RolePermissionsAddBody,
+  UsersCreateResponse,
+  UsersCreateBody
+} from '@internal/types';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
@@ -34,6 +54,14 @@ export const api = createApi({
       query: (id) => ({
         url: `/users/${id}`,
         method: 'DELETE'
+      }),
+      invalidatesTags: ['User']
+    }),
+    createUser: builder.mutation<UsersCreateResponse, UsersCreateBody>({
+      query: (body) => ({
+        url: '/users',
+        method: 'POST',
+        body
       }),
       invalidatesTags: ['User']
     }),
@@ -116,6 +144,7 @@ export const {
   useGetAuthenticationMutation,
   useGetUsersQuery,
   useDeleteUserMutation,
+  useCreateUserMutation,
   useGetRolesQuery,
   useGetRoleQuery,
   useDeleteRoleMutation,

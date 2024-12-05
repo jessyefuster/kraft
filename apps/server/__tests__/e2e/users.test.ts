@@ -27,6 +27,23 @@ describe('Users routes', () => {
 
     test('Create a user', async () => {
         const agent = await createAuthenticatedAgent(server);
+
+        const username = 'fakeUser';
+        const email = 'fakeUser@gmail.com';
+        const password = 'fakeUserPwd';
+
+        const res = await agent.post('/api/users').send({ username, email, password });
+
+        const userRepo = AppDataSource.getRepository(UserEntity);
+        const user = await userRepo.findOneOrFail({ where: { username }, relations: { role: true } });
+
+        expect(user.role).toBeNull();
+
+        expect(res.statusCode).toEqual(201);
+    });
+
+    test('Create a user with a role', async () => {
+        const agent = await createAuthenticatedAgent(server);
         const defaultRole = await getRootRole();
 
         const username = 'fakeUser';
@@ -36,10 +53,12 @@ describe('Users routes', () => {
         const res = await agent.post('/api/users').send({ username, email, password, roleId: defaultRole.id });
 
         const userRepo = AppDataSource.getRepository(UserEntity);
-        const user = await userRepo.findOneByOrFail({ username });
+        const user = await userRepo.findOneOrFail({ where: { username }, relations: { role: true } });
 
-        expect(res.statusCode).toEqual(200);
-        expect(res.text).toEqual(user.id);
+        expect(user.role).toBeDefined();
+        expect(user.role!.id).toEqual(defaultRole.id);
+
+        expect(res.statusCode).toEqual(201);
     });
 
     test('User creation fails if unauthenticated', async () =>  {
@@ -97,11 +116,6 @@ describe('Users routes', () => {
         const withoutPasswordRes = await agent.post('/api/users').send({ username, email, roleId });
 
         expect(withoutPasswordRes.statusCode).toEqual(400);
-
-        // Missing role
-        const withoutRoleRes = await agent.post('/api/users').send({ username, email, password });
-
-        expect(withoutRoleRes.statusCode).toEqual(400);
 
         // Username have less that 5 characters
         const invalidUsernameRes = await agent.post('/api/users').send({ username: 'fake', email, password });

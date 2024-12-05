@@ -23,7 +23,7 @@ export const isUnauthenticated = (req: Request, res: Response, next: NextFunctio
 export const hasPermissions = (neededPermissions: AnyPermission[]) => (req: Request, res: Response, next: NextFunction) => {
     if (!req.isAuthenticated()) {
         next(createHttpError(401, 'User must not be authenticated'));
-    } else if (!roleHasPermissions(req.user.role, neededPermissions)) {
+    } else if (!req.user.role || !roleHasPermissions(req.user.role, neededPermissions)) {
         next(createHttpError(403, 'Unsufficient permissions'));
     } else {
         next();

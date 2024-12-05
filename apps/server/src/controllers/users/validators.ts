@@ -27,10 +27,7 @@ export const validateCreateBody = (body: Partial<UsersCreateBody>) => {
         throw createHttpError(400, 'Password must contain at least 8 characters');
     }
 
-    if (!roleId) {
-        throw createHttpError(400, 'Role id required');
-    }
-    if (!isUUID(roleId, '4')) {
+    if (roleId && !isUUID(roleId, '4')) {
         throw createHttpError(422, 'Cannot find role');
     }
 

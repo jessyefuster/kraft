@@ -17,7 +17,7 @@ export class UserEntity {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
-    @ManyToOne(() => RoleEntity, { nullable: false })
+    @ManyToOne(() => RoleEntity, { nullable: true })
     role!: Relation<RoleEntity> | undefined;
 
     @CreateDateColumn({ nullable: false })
