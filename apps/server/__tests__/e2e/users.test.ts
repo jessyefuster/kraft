@@ -61,6 +61,26 @@ describe('Users routes', () => {
         expect(res.statusCode).toEqual(201);
     });
 
+    test('User creation with a role fails if unauthorized', async () => {
+        const lowPermissionAgent = await createAuthenticatedAgent(server, {
+            user: { username: 'lowPermissionUser', email: 'lowPermissionUser@gmail.com' },
+            permissions: ['create:users']
+        });
+        const defaultRole = await getRootRole();
+
+        const username = 'fakeUser';
+        const email = 'fakeUser@gmail.com';
+        const password = 'fakeUserPwd';
+
+        const res = await lowPermissionAgent.post('/api/users').send({ username, email, password, roleId: defaultRole.id });
+
+        const userRepo = AppDataSource.getRepository(UserEntity);
+        const user = await userRepo.findOne({ where: { username } });
+
+        expect(user).toBeNull();
+        expect(res.statusCode).toEqual(403);
+    });
+
     test('User creation fails if unauthenticated', async () =>  {
         const userPayload = {
             username: 'fakeUser',

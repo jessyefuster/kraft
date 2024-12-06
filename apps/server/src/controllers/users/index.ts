@@ -10,7 +10,7 @@ import { createRole } from '../../services/roles';
 import { createUserDTOFromEntity, createUserEntity, userHasPermissions } from '../../services/user';
 import { validateCreateBody, validateDeleteParams } from './validators';
 
-const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response<UsersCreateResponse>) => {
+const createOne = async (req: TypedRequestBody<UsersCreateBody>, res: Response<UsersCreateResponse>) => {
     const { username, email, password, roleId } = validateCreateBody(req.body);
 
     // Create a query runner to control the transactions, it allows to cancel the transaction if we need to
@@ -39,6 +39,11 @@ const create = async (req: TypedRequestBody<UsersCreateBody>, res: Response<User
         let role: Role | undefined;
 
         if (roleId) {
+            const canAssignRoleToUser = req.user && userHasPermissions(req.user, ['read:roles']);
+            if (!canAssignRoleToUser) {
+                throw createHttpError(403, 'Unsufficient permissions');
+            }
+
             const roleRepo = queryRunner.manager.getRepository(RoleEntity);
             const roleEntity = await roleRepo.findOneBy({ id: roleId });
             if (!roleEntity) {
@@ -96,7 +101,7 @@ const deleteOne = async (req: Request, res: Response) => {
 };
 
 export default {
-    create,
+    createOne,
     getAll,
     deleteOne
 };
