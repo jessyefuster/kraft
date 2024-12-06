@@ -3,6 +3,7 @@ import Typography from '@mui/material/Typography';
 
 import { useGetUsersQuery } from '../../../app/api';
 import Page from '../../../components/layout/Page';
+import StateIllustration from '../../../components/ui/StateIllustration';
 import Table from '../../../components/ui/Table';
 import CreateUserButton from '../components/CreateUserButton';
 import { useUserTableData } from '../hooks/useUserTableData';
@@ -18,7 +19,7 @@ interface Props {
 }
 
 const UsersPage = ({ title }: Props) => {
-  const { data: users = [] } = useGetUsersQuery();
+  const { data: users = [], isError } = useGetUsersQuery();
   const tableData = useUserTableData(users);
 
   return (
@@ -27,15 +28,24 @@ const UsersPage = ({ title }: Props) => {
         <Typography variant="h4">{title}</Typography>
         <CreateUserButton />
       </Header>
-      {!!users.length && (
-        <Box flex={1} marginTop={4} position={'relative'}>
-          <Table
-            {...tableData}
-            label="Liste des utilisateurs"
-            containerProps={{ position: 'absolute', height: '100%' }}
+      {users.length
+        ? (
+          <Box flex={1} marginTop={4} position={'relative'}>
+            <Table
+              {...tableData}
+              label="Liste des utilisateurs"
+              containerProps={{ position: 'absolute', height: '100%' }}
+            />
+          </Box>
+        )
+        : isError && (
+          <StateIllustration
+            state="error"
+            title="Uh-oh"
+            message="Impossible de récupérer l'élément"
           />
-        </Box>
-      )}
+        )
+      }
     </Page>
   );
 };
