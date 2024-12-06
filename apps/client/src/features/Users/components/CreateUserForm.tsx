@@ -4,8 +4,12 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
+import { useMemo } from 'react';
 
+import { useGetRolesQuery } from '../../../app/api';
 import Form from '../../../components/forms/Form';
+import type { SelectItem } from '../../../components/forms/Select';
+import Select from '../../../components/forms/Select';
 import TextInput from '../../../components/forms/TextInput';
 import { useCreateUserForm } from '../hooks/useCreateUserForm';
 
@@ -22,6 +26,10 @@ interface Props {
 
 const CreateUserForm = ({ onBackClick, onSubmitSuccess }: Props) => {
   const { form, requiredFields, isLoading, submitHandler } = useCreateUserForm();
+  const { data: roles = [] } = useGetRolesQuery();
+  const rolesItems = useMemo(() =>
+    roles.map<SelectItem>(role => ({ value: role.id, label: role.name }))
+  , [roles]);
 
   return (
     <Form form={form} onSubmit={submitHandler} onSubmitSuccess={onSubmitSuccess}>
@@ -46,6 +54,16 @@ const CreateUserForm = ({ onBackClick, onSubmitSuccess }: Props) => {
         required={requiredFields.email}
         sx={{ mt: 2 }}
       />
+      {roles.length &&
+        <Select
+          label="Rôle"
+          name="roleId"
+          items={rolesItems}
+          control={form.control}
+          required={requiredFields.roleId}
+          containerProps={{ sx: { mt: 2} }}
+        />
+      }
       <ActionsContainer>
         <Button onClick={onBackClick}>Retour</Button>
         <LoadingButton
