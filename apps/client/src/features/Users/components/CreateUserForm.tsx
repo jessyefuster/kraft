@@ -61,7 +61,7 @@ const CreateUserForm = ({ onBackClick, onSubmitSuccess }: Props) => {
           items={rolesItems}
           control={form.control}
           required={requiredFields.roleId}
-          containerProps={{ sx: { mt: 2} }}
+          containerProps={{ sx: { mt: 2 } }}
         />
       }
       <ActionsContainer>
