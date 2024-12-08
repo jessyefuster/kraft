@@ -1,10 +1,10 @@
 import type { RoleEditBody, RolePermissionsAddBody, RolesCreateBody } from '@internal/types';
 import type { Server } from 'http';
 import request from 'supertest';
+import { ALL_PERMISSIONS } from '@internal/types';
 
 import { AppDataSource } from '../../src/data-source';
 import { RoleEntity } from '../../src/entities/role';
-import { ALL_PERMISSIONS } from '../../src/models/permissions';
 import { createTestRole, getPermissions, getRole, getRootRole } from '../utils/roleHelpers';
 import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 import { fakeUUID } from '../utils/uuid';

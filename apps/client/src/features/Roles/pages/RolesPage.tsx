@@ -8,6 +8,7 @@ import { useGetRolesQuery } from '../../../app/api';
 import Page from '../../../components/layout/Page';
 import StateIllustration from '../../../components/ui/StateIllustration';
 import Table from '../../../components/ui/Table';
+import PermissionWrapper from '../../Permissions/components/PermissionWrapper';
 import CreateRoleButton from '../components/CreateRoleButton';
 import { useRoleTableData } from '../hooks/useRoleTableData';
 
@@ -32,7 +33,9 @@ const RolesPage = ({ title }: Props) => {
     <Page title={title} padding={4}>
       <Header>
         <Typography variant="h4">{title}</Typography>
-        <CreateRoleButton onCreateRole={onCreateRole}/>
+        <PermissionWrapper requiredPermissions={['create:roles']}>
+          <CreateRoleButton onCreateRole={onCreateRole}/>
+        </PermissionWrapper>
       </Header>
       {roles.length
         ? (

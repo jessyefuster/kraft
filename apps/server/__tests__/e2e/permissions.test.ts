@@ -1,9 +1,9 @@
 import type { Server } from 'http';
 import request from 'supertest';
+import { ALL_PERMISSIONS } from '@internal/types';
 
 import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 import { getPermissions } from '../utils/roleHelpers';
-import { ALL_PERMISSIONS } from '../../src/models/permissions';
 
 let server: Server;
 

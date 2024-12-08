@@ -1,8 +1,9 @@
+import type { AnyPermission } from '@internal/types';
+
 import type { UserEntity } from '../entities/user';
 import { PermissionGroupMapper, PermissionMapper } from '../mappers/permissions';
 import { RoleMapper } from '../mappers/roles';
 import { UserMapper } from '../mappers/user';
-import type { AnyPermission } from '../models/permissions';
 import type { User } from '../models/users';
 import { roleHasPermissions } from './roles';
 

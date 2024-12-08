@@ -29,6 +29,12 @@ const slice = createSlice({
       }
     );
     builder.addMatcher(
+      api.endpoints.getCurrentUser.matchFulfilled,
+      (state, { payload }) => {
+        state.user = payload;
+      }
+    );
+    builder.addMatcher(
       isApiAuthRejected,
       (state) => {
         state.user = null;

@@ -1,8 +1,7 @@
-import type { UsersCreateBody } from '@internal/types';
+import type { AnyPermission, UsersCreateBody } from '@internal/types';
 
 import { AppDataSource } from '../../src/data-source';
 import { UserEntity } from '../../src/entities/user';
-import type { AnyPermission } from '../../src/models/permissions';
 import { createRole } from '../../src/services/roles';
 import { createUserEntity } from '../../src/services/user';
 import { createTestRole, getRootRole } from './roleHelpers';

@@ -22,3 +22,5 @@ export interface UsersDeleteParams {
 }
 
 export type UsersListResponse = Array<UserDTO>;
+
+export type UsersMeResponse = UserDTO;

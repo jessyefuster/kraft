@@ -1,4 +1,4 @@
-import type { UsersCreateBody, UsersCreateResponse, UsersListResponse } from '@internal/types';
+import type { UsersCreateBody, UsersCreateResponse, UsersListResponse, UsersMeResponse } from '@internal/types';
 import type { Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
@@ -85,6 +85,22 @@ const getAll = async (req: Request, res: Response<UsersListResponse>) => {
     res.send(users);
 };
 
+const getMe = async (req: Request, res: Response<UsersMeResponse>) => {
+    const userRepo = AppDataSource.getRepository(UserEntity);
+    const userEntity = await userRepo.findOne({
+        where: { id: req.user?.id },
+        relations: { role: { permissions: true } }
+    });
+
+    if (!userEntity) {
+        throw createHttpError(404, 'Cannot find user');
+    }
+
+    const user = createUserDTOFromEntity(userEntity);
+
+    res.send(user);
+};
+
 const deleteOne = async (req: Request, res: Response) => {
     const { id } = validateDeleteParams(req.params);
     
@@ -103,5 +119,6 @@ const deleteOne = async (req: Request, res: Response) => {
 export default {
     createOne,
     getAll,
+    getMe,
     deleteOne
 };

@@ -5,6 +5,7 @@ import Avatar from 'boring-avatars';
 import AutoColoredChip from '../../../components/ui/AutoColoredChip';
 import type { Column } from '../../../components/ui/Table';
 import { avatarColors } from '../../../theme/theme';
+import { useHasPermissions } from '../../Permissions/hooks/useHasPermissions';
 import DeleteUserButton from '../components/DeleteUserButton';
 
 type UserColumn = 'avatar' | 'username' | 'email' | 'role' | 'createdAt' | 'actions';
@@ -16,12 +17,13 @@ type UserColumns<T> = {
 export type ColumnsDisplay = UserColumns<boolean>;
 
 export const useUserTableData = (users: UserDTO[]) => {
+  const showRole = useHasPermissions(['read:roles']);
   const data = useMemo(() => {
     const columns: Column<UserColumn>[] = [
       { id: 'avatar', title: undefined, 'aria-label': 'Avatar' },
       { id: 'username', title: 'Nom d\'utilisateur' },
       { id: 'email', title: 'E-mail' },
-      { id: 'role', title: 'Rôle' },
+      { id: 'role', title: 'Rôle', hidden: !showRole },
       { id: 'createdAt', title: 'Date de création', align: 'right' },
       { id: 'actions', title: 'Actions', align: 'right' }
     ];
@@ -42,7 +44,7 @@ export const useUserTableData = (users: UserDTO[]) => {
       columns,
       items
     };
-  }, [users]);
+  }, [users, showRole]);
 
   return data;
 };
