@@ -1,7 +1,8 @@
+import type { AnyPermission } from '@internal/types';
+
 import type { RoleEntity } from '../entities/role';
 import { PermissionGroupMapper, PermissionMapper } from '../mappers/permissions';
 import { RoleMapper } from '../mappers/roles';
-import type { AnyPermission } from '../models/permissions';
 import type { Role } from '../models/roles';
 
 export const createRoleEntity = (role: Role) => {

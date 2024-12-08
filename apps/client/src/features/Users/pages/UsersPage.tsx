@@ -5,6 +5,7 @@ import { useGetUsersQuery } from '../../../app/api';
 import Page from '../../../components/layout/Page';
 import StateIllustration from '../../../components/ui/StateIllustration';
 import Table from '../../../components/ui/Table';
+import PermissionWrapper from '../../Permissions/components/PermissionWrapper';
 import CreateUserButton from '../components/CreateUserButton';
 import { useUserTableData } from '../hooks/useUserTableData';
 
@@ -26,7 +27,9 @@ const UsersPage = ({ title }: Props) => {
     <Page title={title} padding={4}>
       <Header>
         <Typography variant="h4">{title}</Typography>
-        <CreateUserButton />
+        <PermissionWrapper requiredPermissions={['create:users']}>
+          <CreateUserButton />
+        </PermissionWrapper>
       </Header>
       {users.length
         ? (

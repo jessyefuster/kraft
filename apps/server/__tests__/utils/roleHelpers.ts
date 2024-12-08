@@ -1,10 +1,9 @@
-import type { RolesCreateBody } from '@internal/types';
 import { In } from 'typeorm';
+import type { AnyPermission, RolesCreateBody } from '@internal/types';
 
 import { AppDataSource } from '../../src/data-source';
 import { PermissionEntity } from '../../src/entities/permission';
 import { RoleEntity } from '../../src/entities/role';
-import type { AnyPermission } from '../../src/models/permissions';
 import { createRoleEntity } from '../../src/services/roles';
 import { createPermissions } from '../../src/services/permissions';
 

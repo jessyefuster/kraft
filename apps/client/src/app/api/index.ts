@@ -20,12 +20,13 @@ import type {
   RolePermissionsAddResponse,
   RolePermissionsAddBody,
   UsersCreateResponse,
-  UsersCreateBody
+  UsersCreateBody,
+  UsersMeResponse
 } from '@internal/types';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
-  tagTypes: ['User', 'Role', 'Permission', 'UNAUTHORIZED'],
+  tagTypes: ['User', 'Role', 'Permission', 'AUTHORIZED'],
   endpoints: (builder) => ({
     logIn: builder.mutation<AuthLoginResponse, AuthLoginBody>({
       query: (body) => ({
@@ -33,22 +34,25 @@ export const api = createApi({
         method: 'POST',
         body
       }),
-      invalidatesTags: (result) => result ? ['UNAUTHORIZED'] : []
+      invalidatesTags: (result) => result ? ['AUTHORIZED'] : []
     }),
     logOut: builder.mutation({
       query: () => ({
         url: '/auth/logout',
         method: 'POST'
-      })
+      }),
+      invalidatesTags: (result) => result ? ['AUTHORIZED'] : []
     }),
     getAuthentication: builder.mutation<undefined, void>({
       query: () => '/auth/authenticated'
     }),
+    getCurrentUser:  builder.query<UsersMeResponse, void>({
+      query: () => '/users/me',
+      providesTags: ['User', 'AUTHORIZED']
+    }),
     getUsers: builder.query<UsersListResponse, void>({
       query: () => '/users',
-      providesTags: (_, error) => error?.status === 401
-        ? ['User', 'UNAUTHORIZED']
-        : ['User']
+      providesTags: ['User', 'AUTHORIZED']
     }),
     deleteUser: builder.mutation<unknown, UserDTO['id']>({
       query: (id) => ({
@@ -67,15 +71,11 @@ export const api = createApi({
     }),
     getRoles: builder.query<RolesListResponse, void>({
       query: () => '/roles',
-      providesTags: (result, error) => error?.status === 401
-        ? ['Role', 'UNAUTHORIZED']
-        : ['Role']
+      providesTags: ['Role', 'AUTHORIZED']
     }),
     getRole: builder.query<RoleGetResponse, RoleDTO['id']>({
       query: (id) => `/roles/${id}`,
-      providesTags: (result, error) => error?.status === 401
-        ? ['Role', 'UNAUTHORIZED']
-        : ['Role']
+      providesTags: ['Role', 'AUTHORIZED']
     }),
     deleteRole: builder.mutation<unknown, RoleDTO['id']>({
       query: (id) => ({
@@ -102,9 +102,7 @@ export const api = createApi({
     }),
     getRolePermissions: builder.query<RolePermissionsGetResponse, RoleDTO['id']>({
       query: (id) => `/roles/${id}/permissions`,
-      providesTags: (result, error) => error?.status === 401
-        ? ['Role', 'UNAUTHORIZED']
-        : ['Role']
+      providesTags: ['Role', 'AUTHORIZED']
     }),
     updateRolePermissions: builder.mutation<RolePermissionsUpdateResponse, { id: RoleDTO['id']; body: RolePermissionsUpdateBody }>({
       query: ({ id, body = undefined }) => ({
@@ -124,9 +122,7 @@ export const api = createApi({
     }),
     getPermissions: builder.query<PermissionsListResponse, void>({
       query: () => '/permissions',
-      providesTags: (result, error) => error?.status === 401
-        ? ['Permission', 'UNAUTHORIZED']
-        : ['Permission']
+      providesTags: ['Permission', 'AUTHORIZED']
     }),
   })
 });
@@ -142,6 +138,7 @@ export const {
   useLogInMutation,
   useLogOutMutation,
   useGetAuthenticationMutation,
+  useGetCurrentUserQuery,
   useGetUsersQuery,
   useDeleteUserMutation,
   useCreateUserMutation,

@@ -11,6 +11,7 @@ import Form from '../../../components/forms/Form';
 import type { SelectItem } from '../../../components/forms/Select';
 import Select from '../../../components/forms/Select';
 import TextInput from '../../../components/forms/TextInput';
+import { useHasPermissions } from '../../Permissions/hooks/useHasPermissions';
 import { useCreateUserForm } from '../hooks/useCreateUserForm';
 
 const ActionsContainer = styled(Box)({
@@ -25,6 +26,7 @@ interface Props {
 }
 
 const CreateUserForm = ({ onBackClick, onSubmitSuccess }: Props) => {
+  const showRole = useHasPermissions(['read:roles']);
   const { form, requiredFields, isLoading, submitHandler } = useCreateUserForm();
   const { data: roles = [] } = useGetRolesQuery();
   const rolesItems = useMemo(() =>
@@ -54,7 +56,7 @@ const CreateUserForm = ({ onBackClick, onSubmitSuccess }: Props) => {
         required={requiredFields.email}
         sx={{ mt: 2 }}
       />
-      {roles.length &&
+      {showRole && !!roles.length &&
         <Select
           label="Rôle"
           name="roleId"

@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+import type { AnyPermission } from '@internal/types';
 
-import type { AnyPermission } from '../models/permissions';
 import { roleHasPermissions } from '../services/roles';
 
 export const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {

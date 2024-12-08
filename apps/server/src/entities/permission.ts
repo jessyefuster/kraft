@@ -8,8 +8,8 @@ import {
     ManyToOne,
     PrimaryGeneratedColumn
 } from 'typeorm';
+import { ALL_PERMISSIONS, AnyPermission } from '@internal/types';
 
-import { ALL_PERMISSIONS, AnyPermission } from '../models/permissions';
 import { PermissionGroupEntity } from './permissionGroup';
 import { RoleEntity } from './role';
 
