@@ -6,7 +6,7 @@ import type { Column, Item } from '../../../components/ui/Table';
 import DeleteRoleButton from '../components/DeleteRoleButton';
 import ViewDetailButton from '../components/ViewDetailButton';
 
-type RoleColumn = 'name' | 'description' | 'permissions' | 'actions';
+type RoleColumn = 'name' | 'description' | 'users' | 'permissions' | 'actions';
 
 type RoleColumns<T> = {
   [key in RoleColumn]: T;
@@ -19,7 +19,7 @@ export const useRoleTableData = (roles: RoleDTO[]) => {
     const columns: Column<RoleColumn>[] = [
       { id: 'name', title: 'Nom du rôle' },
       { id: 'description', title: 'Description' },
-      { id: 'permissions', title: 'Nombre de permissions', align: 'right' },
+      { id: 'users', title: 'Utilisateurs', align: 'right' },
       { id: 'actions', title: 'Actions', align: 'right' }
     ];
     const items = roles.map<Item<RoleColumns<React.ReactNode>>>(role => ({
@@ -28,6 +28,7 @@ export const useRoleTableData = (roles: RoleDTO[]) => {
       data: {
         name: <AutoColoredChip labelStr={role.name} label={role.name} variant="outlined" />,
         description: role.description,
+        users: role.usersCount,
         permissions: role.permissionsCount,
         actions:
           <>

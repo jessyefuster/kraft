@@ -11,7 +11,8 @@ export class RoleMapper {
             id: roleEntity.id,
             name: roleEntity.name,
             description: roleEntity.description ?? undefined,
-            permissions: roleEntity.permissions?.map(entity => PermissionMapper.fromEntity(entity))
+            permissions: roleEntity.permissions?.map(entity => PermissionMapper.fromEntity(entity)),
+            users: roleEntity.users?.map(entity => UserMapper.fromEntity(entity)),
         };
     }
 

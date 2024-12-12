@@ -6,16 +6,16 @@ import { In } from 'typeorm';
 import { AppDataSource } from '../../data-source';
 import { PermissionEntity } from '../../entities/permission';
 import { RoleEntity } from '../../entities/role';
+import { UserEntity } from '../../entities/user';
 import type { Permission } from '../../models/permissions';
 import { createPermissions } from '../../services/permissions';
 import { createRole, createRoleDTO, createRoleDTOFromEntity, createRoleEntity, createRoles, mapRolesForRolesList } from '../../services/roles';
+import { createUserDTOFromEntity, userHasPermissions } from '../../services/user';
 import { validateCreateBody, validateDeleteParams, validateGetParams, validatePermissionsUpdatePayload, validateUpdatePayload, validateUsersAddPayload, validateUsersDeletePayload } from './validators';
-import { createUserDTOFromEntity, createUsers, userHasPermissions } from '../../services/user';
-import { UserEntity } from '../../entities/user';
 
 const getAll = async (req: Request, res: Response<RolesListResponse>) => {
     const roleRepo = AppDataSource.getRepository(RoleEntity);
-    const rolesEntities = await roleRepo.find({ relations: { permissions: { group: true } } });
+    const rolesEntities = await roleRepo.find({ relations: { permissions: { group: true }, users: true } });
 
     const roles = createRoles(rolesEntities);
 
@@ -25,10 +25,12 @@ const getAll = async (req: Request, res: Response<RolesListResponse>) => {
 const getOne = async (req: Request, res: Response<RoleGetResponse>) => {
     const { id } = validateGetParams(req.params);
 
+    const appendUsers = req.user && userHasPermissions(req.user, ['read:users']);
+
     const roleRepo = AppDataSource.getRepository(RoleEntity);
     const roleEntity = await roleRepo.findOne({
         where: { id },
-        relations: { permissions: { group: true } }
+        relations: { permissions: { group: true }, users: appendUsers }
     });
 
     if (!roleEntity) {
@@ -36,19 +38,7 @@ const getOne = async (req: Request, res: Response<RoleGetResponse>) => {
     }
 
     const role = createRole(roleEntity);
-
-    const userRepo = AppDataSource.getRepository(UserEntity);
-    const usersEntities = await userRepo.find({
-        where: { roleId: id }
-    });
-    const users = createUsers(usersEntities);
-
-    role.users = users;
-
     const roleDTO = createRoleDTO(role);
-    if (!req.user || !userHasPermissions(req.user, ['read:users'])) {
-        roleDTO.users = undefined;
-    }
 
     res.send(roleDTO);
 };
