@@ -63,7 +63,7 @@ export const api = createApi({
         url: `/users/${id}`,
         method: 'DELETE'
       }),
-      invalidatesTags: ['User']
+      invalidatesTags: ['User', 'Role']
     }),
     createUser: builder.mutation<UsersCreateResponse, UsersCreateBody>({
       query: (body) => ({
@@ -71,7 +71,7 @@ export const api = createApi({
         method: 'POST',
         body
       }),
-      invalidatesTags: ['User']
+      invalidatesTags: ['User', 'Role']
     }),
     getRoles: builder.query<RolesListResponse, void>({
       query: () => '/roles',
