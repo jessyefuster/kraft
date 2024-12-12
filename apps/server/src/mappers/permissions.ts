@@ -2,24 +2,19 @@ import type { PermissionDTO, PermissionGroupDTO } from '@internal/types';
 
 import { PermissionEntity } from '../entities/permission';
 import { PermissionGroupEntity } from '../entities/permissionGroup';
-import type { Mapper } from '../models/mappers';
 import type { Permission, PermissionGroup } from '../models/permissions';
 
-export class PermissionMapper implements Mapper<Permission> {
-    constructor(
-        private permissionGroupMapper: PermissionGroupMapper
-    ) {}
-
-    fromEntity(permissionEntity: PermissionEntity): Permission {
+export class PermissionMapper {
+    static fromEntity(permissionEntity: PermissionEntity): Permission {
         return {
             id: permissionEntity.id,
             code: permissionEntity.code,
             description: permissionEntity.description ?? undefined,
-            group: permissionEntity.group ? this.permissionGroupMapper.fromEntity(permissionEntity.group) : undefined
+            group: permissionEntity.group ? PermissionGroupMapper.fromEntity(permissionEntity.group) : undefined
         };
     }
 
-    toEntity(permission: Permission): PermissionEntity {
+    static toEntity(permission: Permission): PermissionEntity {
         const entity = new PermissionEntity();
 
         if (permission.id) {
@@ -31,7 +26,7 @@ export class PermissionMapper implements Mapper<Permission> {
         }
 
         if (permission.group) {
-            entity.group = this.permissionGroupMapper.toEntity(permission.group);
+            entity.group = PermissionGroupMapper.toEntity(permission.group);
         }
 
         entity.code = permission.code;
@@ -39,18 +34,18 @@ export class PermissionMapper implements Mapper<Permission> {
         return entity;
     }
 
-    toDTO(permission: Permission): PermissionDTO {
+    static toDTO(permission: Permission): PermissionDTO {
         return {
             id: permission.id || permission.code,
             code: permission.code,
             description: permission.description,
-            group: permission.group && this.permissionGroupMapper.toDTO(permission.group)
+            group: permission.group && PermissionGroupMapper.toDTO(permission.group)
         };
     }
 }
 
-export class PermissionGroupMapper implements Mapper<PermissionGroup> {
-    fromEntity(permissionGroupEntity: PermissionGroupEntity): PermissionGroup {
+export class PermissionGroupMapper {
+    static fromEntity(permissionGroupEntity: PermissionGroupEntity): PermissionGroup {
         return {
             id: permissionGroupEntity.id,
             code: permissionGroupEntity.code,
@@ -58,7 +53,7 @@ export class PermissionGroupMapper implements Mapper<PermissionGroup> {
         };
     }
 
-    toEntity(permissionGroup: PermissionGroup): PermissionGroupEntity {
+    static toEntity(permissionGroup: PermissionGroup): PermissionGroupEntity {
         const entity = new PermissionGroupEntity();
 
         if (permissionGroup.id) {
@@ -74,7 +69,7 @@ export class PermissionGroupMapper implements Mapper<PermissionGroup> {
         return entity;
     }
 
-    toDTO(permissionGroup: PermissionGroup): PermissionGroupDTO {
+    static toDTO(permissionGroup: PermissionGroup): PermissionGroupDTO {
         return {
             id: permissionGroup.id || permissionGroup.code,
             code: permissionGroup.code,

@@ -1,4 +1,4 @@
-import type { RoleEditBody, RoleEditResponse, RoleGetResponse, RolePermissionsAddResponse, RolePermissionsGetResponse, RolePermissionsUpdateResponse, RolesCreateBody, RolesCreateResponse, RolesListResponse } from '@internal/types';
+import type { RoleEditBody, RoleEditResponse, RoleGetResponse, RolePermissionsAddBody, RolePermissionsAddResponse, RolePermissionsGetResponse, RolePermissionsUpdateBody, RolePermissionsUpdateResponse, RolesCreateBody, RolesCreateResponse, RolesListResponse, RoleUsersAddBody, RoleUsersAddResponse, RoleUsersDeleteBody } from '@internal/types';
 import type { Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import { In } from 'typeorm';
@@ -8,8 +8,10 @@ import { PermissionEntity } from '../../entities/permission';
 import { RoleEntity } from '../../entities/role';
 import type { Permission } from '../../models/permissions';
 import { createPermissions } from '../../services/permissions';
-import { createRoleDTOFromEntity, createRoleEntity, createRoles, mapRolesForRolesList } from '../../services/roles';
-import { validateCreateBody, validateDeleteParams, validateGetParams, validatePermissionsUpdatePayload, validateUpdatePayload } from './validators';
+import { createRole, createRoleDTO, createRoleDTOFromEntity, createRoleEntity, createRoles, mapRolesForRolesList } from '../../services/roles';
+import { validateCreateBody, validateDeleteParams, validateGetParams, validatePermissionsUpdatePayload, validateUpdatePayload, validateUsersAddPayload, validateUsersDeletePayload } from './validators';
+import { createUserDTOFromEntity, createUsers, userHasPermissions } from '../../services/user';
+import { UserEntity } from '../../entities/user';
 
 const getAll = async (req: Request, res: Response<RolesListResponse>) => {
     const roleRepo = AppDataSource.getRepository(RoleEntity);
@@ -33,9 +35,22 @@ const getOne = async (req: Request, res: Response<RoleGetResponse>) => {
         throw createHttpError(404, 'Cannot find role');
     }
 
-    const role = createRoleDTOFromEntity(roleEntity);
+    const role = createRole(roleEntity);
 
-    res.send(role);
+    const userRepo = AppDataSource.getRepository(UserEntity);
+    const usersEntities = await userRepo.find({
+        where: { roleId: id }
+    });
+    const users = createUsers(usersEntities);
+
+    role.users = users;
+
+    const roleDTO = createRoleDTO(role);
+    if (!req.user || !userHasPermissions(req.user, ['read:users'])) {
+        roleDTO.users = undefined;
+    }
+
+    res.send(roleDTO);
 };
 
 const deleteOne = async (req: Request, res: Response) => {
@@ -141,7 +156,7 @@ const getPermissions = async (req: Request, res: Response<RolePermissionsGetResp
     res.send(rolePermissions);
 };
 
-const addPermissions = async (req: Request, res: Response<RolePermissionsAddResponse>) => {
+const addPermissions = async (req: TypedRequestBody<RolePermissionsAddBody>, res: Response<RolePermissionsAddResponse>) => {
     const { params: { id }, body: { permissionsIds } } = validatePermissionsUpdatePayload(req.params, req.body);
 
     const roleRepo = AppDataSource.getRepository(RoleEntity);
@@ -180,7 +195,7 @@ const addPermissions = async (req: Request, res: Response<RolePermissionsAddResp
     res.send(role.permissions ?? []);
 };
 
-const updatePermissions = async (req: Request, res: Response<RolePermissionsUpdateResponse>) => {
+const updatePermissions = async (req: TypedRequestBody<RolePermissionsUpdateBody>, res: Response<RolePermissionsUpdateResponse>) => {
     const { params: { id }, body: { permissionsIds } } = validatePermissionsUpdatePayload(req.params, req.body);
 
     const roleRepo = AppDataSource.getRepository(RoleEntity);
@@ -215,6 +230,82 @@ const updatePermissions = async (req: Request, res: Response<RolePermissionsUpda
     res.send(role.permissions ?? []);
 };
 
+const addUsers = async (req: TypedRequestBody<RoleUsersAddBody>, res: Response<RoleUsersAddResponse>) => {
+    const { params: { id }, body: { usersIds } } = validateUsersAddPayload(req.params, req.body);
+
+    const roleRepo = AppDataSource.getRepository(RoleEntity);
+    const roleEntity = await roleRepo.findOne({
+        where: { id }
+    });
+
+    if (!roleEntity) {
+        throw createHttpError(404, 'Cannot find role');
+    }
+
+    if (roleEntity.isRoot) {
+        throw createHttpError(405, 'Role is read-only');
+    }
+
+    const userRepo = AppDataSource.getRepository(UserEntity);
+    
+    if (usersIds.length) {
+        const userEntities = await userRepo.findBy({ id: In(usersIds) });
+
+        if (userEntities.length !== usersIds.length) {
+            throw createHttpError(422, 'Cannot find user');
+        }
+
+        userEntities.forEach(userEntity => userEntity.roleId = id);
+
+        await userRepo.save(userEntities);
+    }
+
+    const usersEntities = await userRepo.find({
+        where: { roleId: id }
+    });
+    const users = usersEntities.map(entity => createUserDTOFromEntity(entity));
+
+    res.send(users);
+};
+
+const deleteUsers = async (req: TypedRequestBody<RoleUsersDeleteBody>, res: Response<RoleUsersAddResponse>) => {
+    const { params: { id }, body: { usersIds } } = validateUsersDeletePayload(req.params, req.body);
+
+    const roleRepo = AppDataSource.getRepository(RoleEntity);
+    const roleEntity = await roleRepo.findOne({
+        where: { id }
+    });
+
+    if (!roleEntity) {
+        throw createHttpError(404, 'Cannot find role');
+    }
+
+    if (roleEntity.isRoot) {
+        throw createHttpError(405, 'Role is read-only');
+    }
+
+    const userRepo = AppDataSource.getRepository(UserEntity);
+    
+    if (usersIds.length) {
+        const userEntities = await userRepo.findBy({ id: In(usersIds), roleId: id });
+
+        if (userEntities.length !== usersIds.length) {
+            throw createHttpError(422, 'Cannot find user');
+        }
+
+        userEntities.forEach(userEntity => userEntity.roleId = null);
+
+        await userRepo.save(userEntities);
+    }
+
+    const usersEntities = await userRepo.find({
+        where: { roleId: id }
+    });
+    const users = usersEntities.map(entity => createUserDTOFromEntity(entity));
+
+    res.send(users);
+};
+
 export default {
     getAll,
     deleteOne,
@@ -224,4 +315,6 @@ export default {
     getPermissions,
     addPermissions,
     updatePermissions,
+    addUsers,
+    deleteUsers
 };

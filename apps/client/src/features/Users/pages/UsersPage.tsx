@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Box, styled } from '@mui/material';
 import Typography from '@mui/material/Typography';
 
@@ -8,6 +9,7 @@ import Table from '../../../components/ui/Table';
 import PermissionWrapper from '../../Permissions/components/PermissionWrapper';
 import CreateUserButton from '../components/CreateUserButton';
 import { useUserTableData } from '../hooks/useUserTableData';
+import DeleteUserButton from '../components/DeleteUserButton';
 
 const Header = styled(Box)({
   display: 'flex',
@@ -21,7 +23,9 @@ interface Props {
 
 const UsersPage = ({ title }: Props) => {
   const { data: users = [], isError } = useGetUsersQuery();
-  const tableData = useUserTableData(users);
+  const tableData = useUserTableData(users, useMemo(() => ({
+    renderActions: ({ userId }) => <DeleteUserButton id={userId} />
+  }), []));
 
   return (
     <Page title={title} padding={4}>

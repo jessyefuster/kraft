@@ -4,6 +4,7 @@ import {
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
+    JoinColumn,
     ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
@@ -18,7 +19,11 @@ export class UserEntity {
     id!: string;
 
     @ManyToOne(() => RoleEntity, { nullable: true })
-    role!: Relation<RoleEntity> | undefined;
+    @JoinColumn({ name: 'roleId' })
+    role!: Relation<RoleEntity> | undefined | null;
+
+    @Column({ nullable: true })
+    roleId!: string | null;
 
     @CreateDateColumn({ nullable: false })
     createdAt!: Date;

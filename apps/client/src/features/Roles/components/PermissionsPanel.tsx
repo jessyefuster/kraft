@@ -1,4 +1,4 @@
-import type { PermissionDTO, RoleDTO } from '@internal/types';
+import type { RoleDTO } from '@internal/types';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -9,7 +9,7 @@ import AddPermissionsButton from './AddPermissionsButton';
 
 interface Props {
   roleId: RoleDTO['id'];
-  permissions?: PermissionDTO[];
+  permissions?: RoleDTO['permissions'];
 }
 
 const PermissionsPanel = ({ roleId, permissions }: Props) => {

@@ -1,25 +1,21 @@
 import type { RoleDTO } from '@internal/types';
 
 import { RoleEntity } from '../entities/role';
-import type { Mapper } from '../models/mappers';
 import type { Role } from '../models/roles';
-import type { PermissionMapper } from './permissions';
+import { PermissionMapper } from './permissions';
+import { UserMapper } from './user';
 
-export class RoleMapper implements Mapper<Role> {
-    constructor(
-        private permissionMapper: PermissionMapper
-    ) {}
-
-    fromEntity(roleEntity: RoleEntity): Role {
+export class RoleMapper {
+    static fromEntity(roleEntity: RoleEntity): Role {
         return {
             id: roleEntity.id,
             name: roleEntity.name,
             description: roleEntity.description ?? undefined,
-            permissions: roleEntity.permissions?.map(entity => this.permissionMapper.fromEntity(entity))
+            permissions: roleEntity.permissions?.map(entity => PermissionMapper.fromEntity(entity))
         };
     }
 
-    toEntity(role: Role): RoleEntity {
+    static toEntity(role: Role): RoleEntity {
         const entity = new RoleEntity();
 
         if (role.id) {
@@ -30,18 +26,20 @@ export class RoleMapper implements Mapper<Role> {
         }
 
         entity.name = role.name;
-        entity.permissions = role.permissions?.map(permission => this.permissionMapper.toEntity(permission));
+        entity.permissions = role.permissions?.map(permission => PermissionMapper.toEntity(permission));
 
         return entity;
     }
 
-    toDTO(role: Role): RoleDTO {
+    static toDTO(role: Role): RoleDTO {
         return {
             id: role.id || role.name,
             name: role.name,
             description: role.description,
-            permissions: role.permissions?.map(permission => this.permissionMapper.toDTO(permission)),
-            permissionsCount: role.permissions?.length ?? undefined
+            permissions: role.permissions?.map(permission => PermissionMapper.toDTO(permission)),
+            permissionsCount: role.permissions?.length ?? undefined,
+            users: role.users?.map(user => UserMapper.toDTO(user)),
+            usersCount: role.users?.length ?? undefined
         };
     }
 }

@@ -1,4 +1,5 @@
 import type { PermissionDTO } from './permissions';
+import type { UserDTO } from './users';
 
 export interface RoleDTO {
     id: string;
@@ -6,6 +7,8 @@ export interface RoleDTO {
     description?: string;
     permissions?: PermissionDTO[];
     permissionsCount?: number;
+    users?: UserDTO[];
+    usersCount?: number;
 }
 
 export interface RolesCreateBody {
@@ -46,3 +49,15 @@ export type RolePermissionsUpdateResponse = RolePermissionsGetResponse;
 export type RolePermissionsAddBody = RolePermissionsUpdateBody;
 
 export type RolePermissionsAddResponse = RolePermissionsGetResponse;
+
+export interface RoleUsersAddBody {
+    usersIds: Array<UserDTO['id']>;
+}
+
+export type RoleUsersAddResponse = Array<UserDTO>;
+
+export interface RoleUsersDeleteBody {
+    usersIds: Array<UserDTO['id']>;
+}
+
+export type RoleUsersDeleteResponse = Array<UserDTO>;

@@ -1,38 +1,25 @@
 import type { AnyPermission } from '@internal/types';
 
 import type { UserEntity } from '../entities/user';
-import { PermissionGroupMapper, PermissionMapper } from '../mappers/permissions';
-import { RoleMapper } from '../mappers/roles';
 import { UserMapper } from '../mappers/user';
 import type { User } from '../models/users';
 import { roleHasPermissions } from './roles';
 
-export const createUserEntity = (user: User) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const permissionMapper = new PermissionMapper(permissionGroupMapper);
-    const roleMapper = new RoleMapper(permissionMapper);
-    const mapper = new UserMapper(roleMapper);
+export const createUser = (userEntity: UserEntity) =>
+    UserMapper.fromEntity(userEntity);
 
-    return mapper.toEntity(user);
-};
+export const createUsers = (userEntities: UserEntity[]) =>
+    userEntities.map(entity => createUser(entity));
 
-export const createUserDTO = (user: User) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const permissionMapper = new PermissionMapper(permissionGroupMapper);
-    const roleMapper = new RoleMapper(permissionMapper);
-    const mapper = new UserMapper(roleMapper);
+export const createUserEntity = (user: User) =>
+    UserMapper.toEntity(user);
 
-    return mapper.toDTO(user);
-};
+export const createUserDTO = (user: User) =>
+    UserMapper.toDTO(user);
 
 export const createUserDTOFromEntity = (userEntity: UserEntity) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const permissionMapper = new PermissionMapper(permissionGroupMapper);
-    const roleMapper = new RoleMapper(permissionMapper);
-    const mapper = new UserMapper(roleMapper);
-
-    const user = mapper.fromEntity(userEntity);
-    const userDTO = mapper.toDTO(user);
+    const user = createUser(userEntity);
+    const userDTO = createUserDTO(user);
 
     return userDTO;
 };

@@ -35,12 +35,7 @@ const login = (
                     return next(err);
                 }
 
-                const permissionGroupMapper = new PermissionGroupMapper();
-                const permissionMapper = new PermissionMapper(permissionGroupMapper);
-                const roleMapper = new RoleMapper(permissionMapper);
-                const userMapper = new UserMapper(roleMapper);
-
-                return res.send(userMapper.toDTO(user));
+                return res.send(UserMapper.toDTO(user));
             });
         },
     )(req, res, next);

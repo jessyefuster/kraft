@@ -1,57 +1,27 @@
 import type { AnyPermission } from '@internal/types';
 
 import type { RoleEntity } from '../entities/role';
-import { PermissionGroupMapper, PermissionMapper } from '../mappers/permissions';
 import { RoleMapper } from '../mappers/roles';
 import type { Role } from '../models/roles';
 
-export const createRoleEntity = (role: Role) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const permissionMapper = new PermissionMapper(permissionGroupMapper);
-    const mapper = new RoleMapper(permissionMapper);
+export const createRoleEntity = (role: Role) =>
+    RoleMapper.toEntity(role);
 
-    return mapper.toEntity(role);
-};
+export const createRole = (roleEntity: RoleEntity) =>
+    RoleMapper.fromEntity(roleEntity);
 
-export const createRole = (roleEntity: RoleEntity) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const permissionMapper = new PermissionMapper(permissionGroupMapper);
-    const mapper = new RoleMapper(permissionMapper);
+export const createRoles = (roleEntities: RoleEntity[]) =>
+    roleEntities.map(entity => createRole(entity));
 
-    return mapper.fromEntity(roleEntity);
-};
+export const createRoleDTO = (role: Role) =>
+    RoleMapper.toDTO(role);
 
-export const createRoles = (roleEntities: RoleEntity[]) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const permissionMapper = new PermissionMapper(permissionGroupMapper);
-    const mapper = new RoleMapper(permissionMapper);
-
-    return roleEntities.map(entity => mapper.fromEntity(entity));
-};
-
-export const createRoleDTO = (role: Role) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const permissionMapper = new PermissionMapper(permissionGroupMapper);
-    const mapper = new RoleMapper(permissionMapper);
-
-    return mapper.toDTO(role);
-};
-
-export const createRolesDTO = (roles: Role[]) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const permissionMapper = new PermissionMapper(permissionGroupMapper);
-    const mapper = new RoleMapper(permissionMapper);
-
-    return roles.map(role => mapper.toDTO(role));
-};
+export const createRolesDTO = (roles: Role[]) =>
+    roles.map(role => RoleMapper.toDTO(role));
 
 export const createRoleDTOFromEntity = (roleEntity: RoleEntity) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const permissionMapper = new PermissionMapper(permissionGroupMapper);
-    const mapper = new RoleMapper(permissionMapper);
-
-    const role = mapper.fromEntity(roleEntity);
-    const roleDTO = mapper.toDTO(role);
+    const role = RoleMapper.fromEntity(roleEntity);
+    const roleDTO = RoleMapper.toDTO(role);
 
     return roleDTO;
 };

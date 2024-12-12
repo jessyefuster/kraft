@@ -21,7 +21,11 @@ import type {
   RolePermissionsAddBody,
   UsersCreateResponse,
   UsersCreateBody,
-  UsersMeResponse
+  UsersMeResponse,
+  RoleUsersAddResponse,
+  RoleUsersAddBody,
+  RoleUsersDeleteResponse,
+  RoleUsersDeleteBody
 } from '@internal/types';
 
 export const api = createApi({
@@ -124,6 +128,22 @@ export const api = createApi({
       query: () => '/permissions',
       providesTags: ['Permission', 'AUTHORIZED']
     }),
+    addRoleUsers: builder.mutation<RoleUsersAddResponse, { id: RoleDTO['id']; body: RoleUsersAddBody }>({
+      query: ({ id, body = undefined }) => ({
+        url: `/roles/${id}/users`,
+        method: 'POST',
+        body
+      }),
+      invalidatesTags: ['Role', 'User']
+    }),
+    deleteRoleUsers: builder.mutation<RoleUsersDeleteResponse, { id: RoleDTO['id']; body: RoleUsersDeleteBody }>({
+      query: ({ id, body = undefined }) => ({
+        url: `/roles/${id}/users`,
+        method: 'DELETE',
+        body
+      }),
+      invalidatesTags: ['Role', 'User', 'AUTHORIZED']
+    }),
   })
 });
 
@@ -150,5 +170,7 @@ export const {
   useGetRolePermissionsQuery,
   useUpdateRolePermissionsMutation,
   useAddRolePermissionsMutation,
-  useGetPermissionsQuery
+  useGetPermissionsQuery,
+  useAddRoleUsersMutation,
+  useDeleteRoleUsersMutation
 } = api;

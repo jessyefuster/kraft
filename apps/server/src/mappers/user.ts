@@ -1,16 +1,11 @@
 import type { UserDTO } from '@internal/types';
 
 import { UserEntity } from '../entities/user';
-import type { Mapper } from '../models/mappers';
 import type { User } from '../models/users';
-import type { RoleMapper } from './roles';
+import { RoleMapper } from './roles';
 
-export class UserMapper implements Mapper<User> {
-    constructor(
-        private roleMapper: RoleMapper
-    ) {}
-
-    fromEntity(userEntity: UserEntity): User {
+export class UserMapper {
+    static fromEntity(userEntity: UserEntity): User {
         return {
             id: userEntity.id,
             createdAt: userEntity.createdAt,
@@ -18,11 +13,11 @@ export class UserMapper implements Mapper<User> {
             email: userEntity.email,
             username: userEntity.username,
             deletedAt: userEntity.deletedAt ?? undefined,
-            role: userEntity.role && this.roleMapper.fromEntity(userEntity.role)
+            role: userEntity.role ? RoleMapper.fromEntity(userEntity.role) : undefined
         };
     }
 
-    toEntity(user: User): UserEntity {
+    static toEntity(user: User): UserEntity {
         const entity = new UserEntity();
 
         if (user.id) {
@@ -34,7 +29,7 @@ export class UserMapper implements Mapper<User> {
         }
 
         if (user.role) {
-            entity.role = this.roleMapper.toEntity(user.role);
+            entity.role = RoleMapper.toEntity(user.role);
         }
 
         entity.email = user.email;
@@ -43,13 +38,13 @@ export class UserMapper implements Mapper<User> {
         return entity;
     }
 
-    toDTO(user: User): UserDTO {
+    static toDTO(user: User): UserDTO {
         return {
             id: user.id || user.email,
             createdAt: user.createdAt?.toISOString(),
             email: user.email,
             username: user.username,
-            role: user.role && this.roleMapper.toDTO(user.role)
+            role: user.role && RoleMapper.toDTO(user.role)
         };
     }
 }

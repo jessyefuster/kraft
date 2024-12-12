@@ -2,50 +2,23 @@ import type { PermissionEntity } from '../entities/permission';
 import { PermissionGroupMapper, PermissionMapper } from '../mappers/permissions';
 import type { Permission, PermissionGroup } from '../models/permissions';
 
-export const createPermissionGroupEntities = (permissionGroups: PermissionGroup[]) => {
-    const mapper = new PermissionGroupMapper();
+export const createPermissionGroupEntities = (permissionGroups: PermissionGroup[]) =>
+    permissionGroups.map(permissionGroup => PermissionGroupMapper.toEntity(permissionGroup));
 
-    return permissionGroups.map(permissionGroup => mapper.toEntity(permissionGroup));
-};
+export const createPermissionEntity = (permission: Permission) =>
+    PermissionMapper.toEntity(permission);
 
-export const createPermissionEntity = (permission: Permission) => {
-    const groupMapper = new PermissionGroupMapper();
-    const mapper = new PermissionMapper(groupMapper);
+export const createPermissionEntities = (permissions: Permission[]) =>
+    permissions.map(permission => PermissionMapper.toEntity(permission));
 
-    return mapper.toEntity(permission);
-};
+export const createPermissions = (entities: PermissionEntity[]) =>
+    entities.map(entity => PermissionMapper.fromEntity(entity));
 
-export const createPermissionEntities = (permissions: Permission[]) => {
-    const groupMapper = new PermissionGroupMapper();
-    const mapper = new PermissionMapper(groupMapper);
+export const createPermission = (entity: PermissionEntity) =>
+    PermissionMapper.fromEntity(entity);
 
-    return permissions.map(permission => mapper.toEntity(permission));
-};
+export const createPermissionDTO = (permission: Permission) =>
+    PermissionMapper.toDTO(permission);
 
-export const createPermissions = (entities: PermissionEntity[]) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const mapper = new PermissionMapper(permissionGroupMapper);
-
-    return entities.map(entity => mapper.fromEntity(entity));
-};
-
-export const createPermission = (entity: PermissionEntity) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const mapper = new PermissionMapper(permissionGroupMapper);
-
-    return mapper.fromEntity(entity);
-};
-
-export const createPermissionDTO = (permission: Permission) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const mapper = new PermissionMapper(permissionGroupMapper);
-
-    return mapper.toDTO(permission);
-};
-
-export const createPermissionsDTO = (permissions: Permission[]) => {
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const mapper = new PermissionMapper(permissionGroupMapper);
-
-    return permissions.map(permission => mapper.toDTO(permission));
-};
+export const createPermissionsDTO = (permissions: Permission[]) =>
+    permissions.map(permission => PermissionMapper.toDTO(permission));

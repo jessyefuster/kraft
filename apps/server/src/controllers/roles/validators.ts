@@ -1,4 +1,4 @@
-import type { RoleEditBody, RoleGetParams, RolePermissionsAddBody, RolesCreateBody, RolesDeleteParams } from '@internal/types';
+import type { RoleEditBody, RoleGetParams, RolePermissionsAddBody, RolesCreateBody, RolesDeleteParams, RoleUsersAddBody, RoleUsersDeleteBody } from '@internal/types';
 import createHttpError from 'http-errors';
 import isUUID from 'validator/lib/isUUID';
 
@@ -64,4 +64,38 @@ export const validatePermissionsUpdatePayload = (params: Partial<RoleGetParams>,
     }
 
     return { params: validatedParams, body: { permissionsIds: [...new Set(permissionsIds)] } as RolePermissionsAddBody };
+};
+
+export const validateUsersAddPayload = (params: Partial<RoleGetParams>, body: Partial<RoleUsersAddBody>) => {
+    const validatedParams = validateGetParams(params);
+    const { usersIds } = body;
+
+    if (!usersIds) {
+        throw createHttpError(400, 'Users ids required');
+    }
+
+    for (const userId of usersIds) {
+        if (!isUUID(userId, '4')) {
+            throw createHttpError(422, 'Cannot find user');
+        }
+    }
+
+    return { params: validatedParams, body: { usersIds: [...new Set(usersIds)] } as RoleUsersAddBody };
+};
+
+export const validateUsersDeletePayload = (params: Partial<RoleGetParams>, body: Partial<RoleUsersDeleteBody>) => {
+    const validatedParams = validateGetParams(params);
+    const { usersIds } = body;
+
+    if (!usersIds) {
+        throw createHttpError(400, 'Users ids required');
+    }
+
+    for (const userId of usersIds) {
+        if (!isUUID(userId, '4')) {
+            throw createHttpError(422, 'Cannot find user');
+        }
+    }
+
+    return { params: validatedParams, body: { usersIds: [...new Set(usersIds)] } as RoleUsersAddBody };
 };

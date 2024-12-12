@@ -5,8 +5,6 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import { AppDataSource } from '../data-source';
 import { UserEntity } from '../entities/user';
 import { UserMapper } from '../mappers/user';
-import { RoleMapper } from '../mappers/roles';
-import { PermissionGroupMapper, PermissionMapper } from '../mappers/permissions';
 
 passport.use(
     new LocalStrategy(
@@ -29,12 +27,8 @@ passport.use(
                 if (!userEntity || !userEntity.verifyPassword(password)) {
                     return done(null, undefined);
                 }
-                const permissionGroupMapper = new PermissionGroupMapper();
-                const permissionMapper = new PermissionMapper(permissionGroupMapper);
-                const roleMapper = new RoleMapper(permissionMapper);
-                const userMapper = new UserMapper(roleMapper);
 
-                return done(null, userMapper.fromEntity(userEntity));
+                return done(null, UserMapper.fromEntity(userEntity));
             } catch (err) {
                 return done(err);
             }
@@ -54,10 +48,6 @@ passport.deserializeUser(async (req: Request, id: string, done: any) => {
         where: { id },
         relations: { role: { permissions: true } }
     });
-    const permissionGroupMapper = new PermissionGroupMapper();
-    const permissionMapper = new PermissionMapper(permissionGroupMapper);
-    const roleMapper = new RoleMapper(permissionMapper);
-    const userMapper = new UserMapper(roleMapper);
 
     if (!userEntity) {
         // if passport tries to deserialize user but id doesn't exist anymore in db,
@@ -65,7 +55,7 @@ passport.deserializeUser(async (req: Request, id: string, done: any) => {
         req.logout(() => undefined);
         done(null, null);
     } else {
-        done(null, userMapper.fromEntity(userEntity));
+        done(null, UserMapper.fromEntity(userEntity));
     }
 });
 

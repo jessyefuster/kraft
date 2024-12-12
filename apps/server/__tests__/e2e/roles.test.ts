@@ -1,4 +1,4 @@
-import type { RoleEditBody, RolePermissionsAddBody, RolesCreateBody } from '@internal/types';
+import type { RoleEditBody, RolePermissionsAddBody, RolesCreateBody, RoleUsersAddBody, RoleUsersDeleteBody } from '@internal/types';
 import type { Server } from 'http';
 import request from 'supertest';
 import { ALL_PERMISSIONS } from '@internal/types';
@@ -8,6 +8,8 @@ import { RoleEntity } from '../../src/entities/role';
 import { createTestRole, getPermissions, getRole, getRootRole } from '../utils/roleHelpers';
 import { clearDatabase, closeDatabase, createAuthenticatedAgent, createTestServer } from '../utils/testsHelpers';
 import { fakeUUID } from '../utils/uuid';
+import { createTestUser, getUserByUsername } from '../utils/userHelpers';
+import { UserEntity } from '../../src/entities/user';
 
 let server: Server;
 
@@ -832,6 +834,337 @@ describe('Roles routes', () => {
             });
             const lowPermissionRes = await lowPermissionAgent.put('/api/roles/fakeRoleId/permissions');
             expect(lowPermissionRes.statusCode).toEqual(403);
+        });
+    });
+
+    describe('POST /roles/:id/users', () => {
+        beforeEach(async () => {
+            await clearDatabase();
+        });
+
+        test('Add users', async () => {
+            const userRepo = AppDataSource.getRepository(UserEntity);
+            const agent = await createAuthenticatedAgent(server, { user: { username: 'testUser' }, permissions: [...ALL_PERMISSIONS] });
+            const user = await getUserByUsername('testUser');
+            const roleId = user!.roleId as string;
+            const testUser1 = await createTestUser({ user: { username: 'fake1', password: 'password', email: 'fake1@gmail.com' } });
+            const testUser2 = await createTestUser({ user: { username: 'fake2', password: 'password', email: 'fake2@gmail.com' } });
+
+            const [usersInRoleBeforeAdd, usersInRoleCountBeforeAdd] = await userRepo.findAndCountBy({ roleId });
+
+            const usersToAdd = [testUser1, testUser2];
+            const usersToAddIds = usersToAdd.map(user => user.id);
+            
+            const payload: RoleUsersAddBody = {
+                usersIds: [...usersToAddIds, ...usersToAddIds] // handling duplicates
+            };
+
+            const res = await agent.post(`/api/roles/${roleId}/users`).send(payload);
+
+            expect(res.statusCode).toEqual(200);
+            expect(res.body).toHaveLength(usersInRoleCountBeforeAdd + usersToAdd.length);
+
+            for (const user of [...usersInRoleBeforeAdd, ...usersToAdd]) {
+                expect(res.body).toContainEqual(expect.objectContaining({ id: user.id }));
+            }
+
+            const [usersInRoleAfterAdd, usersInRoleCountAfterAdd] = await userRepo.findAndCountBy({ roleId });
+
+            expect(usersInRoleCountAfterAdd).toBe(usersInRoleCountBeforeAdd + usersToAdd.length);
+            for (const user of [...usersInRoleBeforeAdd, ...usersToAdd]) {
+                expect(usersInRoleAfterAdd).toContainEqual(expect.objectContaining({ id: user.id }));
+            }
+        });
+
+        test('Add users with empty array', async () => {
+            const userRepo = AppDataSource.getRepository(UserEntity);
+            const agent = await createAuthenticatedAgent(server, { user: { username: 'testUser' }, permissions: [...ALL_PERMISSIONS] });
+            const user = await getUserByUsername('testUser');
+            const roleId = user!.roleId as string;
+            
+            const [usersInRoleBeforeAdd, usersInRoleCountBeforeAdd] = await userRepo.findAndCountBy({ roleId });
+
+            const payload: RoleUsersAddBody = {
+                usersIds: []
+            };
+
+            const res = await agent.post(`/api/roles/${roleId}/users`).send(payload);
+
+            expect(res.statusCode).toEqual(200);
+            expect(res.body).toHaveLength(usersInRoleCountBeforeAdd);
+
+            for (const user of usersInRoleBeforeAdd) {
+                expect(res.body).toContainEqual(expect.objectContaining({ id: user.id }));
+            }
+
+            const [usersInRoleAfterAdd, usersInRoleCountAfterAdd] = await userRepo.findAndCountBy({ roleId });
+
+            expect(usersInRoleCountAfterAdd).toBe(usersInRoleCountBeforeAdd);
+            for (const user of usersInRoleBeforeAdd) {
+                expect(usersInRoleAfterAdd).toContainEqual(expect.objectContaining({ id: user.id }));
+            }
+        });
+
+        test('Add users fails if body is invalid', async () => {
+            const agent = await createAuthenticatedAgent(server);
+            const testUser = await createTestUser({ user: { username: 'fakeUser', email: 'fakeUser@gmail.com' } });
+            const roleId = testUser.roleId;
+
+            const withoutBodyRes = await agent.post(`/api/roles/${roleId}/users`);
+            expect(withoutBodyRes.statusCode).toEqual(400);
+
+            const invalidBodyRes = await agent.post(`/api/roles/${roleId}/users`).send({ usersIds: 5 });
+            expect(invalidBodyRes.statusCode).toBeGreaterThanOrEqual(400);
+
+            const invalidIdsRes = await agent.post(`/api/roles/${roleId}/users`).send({ usersIds: [testUser.id, 2] });
+            expect(invalidIdsRes.statusCode).toBeGreaterThanOrEqual(400);
+        });
+
+        test('Add users fails if any user does\'nt exist', async () => {
+            const userRepo = AppDataSource.getRepository(UserEntity);
+            const agent = await createAuthenticatedAgent(server, { user: { username: 'testUser' }, permissions: [...ALL_PERMISSIONS] });
+            const user = await getUserByUsername('testUser');
+            const roleId = user!.roleId as string;
+            const testUser1 = await createTestUser({ user: { username: 'fakeUser1', password: 'password', email: 'fakeUser1@gmail.com' } });
+
+            const [usersInRoleBeforeAdd, usersInRoleCountBeforeAdd] = await userRepo.findAndCountBy({ roleId });
+
+            const usersToAdd = [testUser1];
+            const usersToAddIds = usersToAdd.map(user => user.id);
+            
+            const payload: RoleUsersAddBody = {
+                usersIds: [...usersToAddIds, fakeUUID]
+            };
+
+            const res = await agent.post(`/api/roles/${roleId}/users`).send(payload);
+
+            expect(res.statusCode).toEqual(422);
+
+            const [usersInRoleAfterAdd, usersInRoleCountAfterAdd] = await userRepo.findAndCountBy({ roleId });
+
+            expect(usersInRoleCountAfterAdd).toBe(usersInRoleCountBeforeAdd);
+            for (const user of usersInRoleBeforeAdd) {
+                expect(usersInRoleAfterAdd).toContainEqual(expect.objectContaining({ id: user.id }));
+            }
+        });
+
+        test('Add users fails if role is root', async () => {
+            const agent = await createAuthenticatedAgent(server);
+            const rootRoleEntity = await getRootRole();
+    
+            const res = await agent.post(`/api/roles/${rootRoleEntity.id}/users`).send({ usersIds: [] });
+    
+            expect(res.statusCode).toEqual(405);
+        });
+
+        test('Add users fails if role doesn\'t exist', async () => {
+            const agent = await createAuthenticatedAgent(server);
+            const res = await agent.post('/api/roles/fakeRoleId/users').send({ usersIds: [] });
+    
+            expect(res.statusCode).toEqual(404);
+    
+            const res2 = await agent.post(`/api/roles/${fakeUUID}/users`).send({ usersIds: [] });
+    
+            expect(res2.statusCode).toEqual(404);
+        });
+
+        test('Add users fails if unauthenticated', async () => {
+            const res = await request(server).post('/api/roles/fakeRoleId/users').send({ usersIds: [] });
+    
+            expect(res.statusCode).toEqual(401);
+        });
+
+        test('Add users fails if unauthorized', async () => {
+            const noPermissionAgent = await createAuthenticatedAgent(server, {
+                user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+                permissions: []
+            });
+    
+            const noPermissionRes = await noPermissionAgent.post('/api/roles/fakeRoleId/users');
+            expect(noPermissionRes.statusCode).toEqual(403);
+    
+            const lowPermissionAgent1 = await createAuthenticatedAgent(server, {
+                user: { username: 'lowPermissionUser1', email: 'lowPermissionUser1@gmail.com' },
+                permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:roles')
+            });
+            const lowPermissionRes1 = await lowPermissionAgent1.post('/api/roles/fakeRoleId/users');
+            expect(lowPermissionRes1.statusCode).toEqual(403);
+
+            const lowPermissionAgent2 = await createAuthenticatedAgent(server, {
+                user: { username: 'lowPermissionUser2', email: 'lowPermissionUser2@gmail.com' },
+                permissions: ALL_PERMISSIONS.filter(permission => permission !== 'update:users')
+            });
+            const lowPermissionRes2 = await lowPermissionAgent2.post('/api/roles/fakeRoleId/users');
+            expect(lowPermissionRes2.statusCode).toEqual(403);
+        });
+    });
+
+    describe('DELETE /roles/:id/users', () => {
+        beforeEach(async () => {
+            await clearDatabase();
+        });
+
+        test('Delete users', async () => {
+            const userRepo = AppDataSource.getRepository(UserEntity);
+            const agent = await createAuthenticatedAgent(server, { user: { username: 'testUser' }, permissions: [...ALL_PERMISSIONS] });
+            const user = await getUserByUsername('testUser');
+            const roleId = user!.roleId as string;
+            const testUser1 = await createTestUser({ user: { username: 'fake1', password: 'password', email: 'fake1@gmail.com' }, roleName: user?.role?.name });
+            const testUser2 = await createTestUser({ user: { username: 'fake2', password: 'password', email: 'fake2@gmail.com' }, roleName: user?.role?.name });
+
+            const [usersInRoleBeforeDelete, usersInRoleCountBeforeDelete] = await userRepo.findAndCountBy({ roleId });
+
+            const usersToDelete = [testUser1, testUser2];
+            const usersExpectedAfterDelete = usersInRoleBeforeDelete.filter(userBeforeDelete => !usersToDelete.some(userToDelete => userBeforeDelete.id === userToDelete.id))
+            const usersToDeleteIds = usersToDelete.map(user => user.id);
+            
+            const payload: RoleUsersDeleteBody = {
+                usersIds: [...usersToDeleteIds, ...usersToDeleteIds] // handling duplicates
+            };
+
+            const res = await agent.delete(`/api/roles/${roleId}/users`).send(payload);
+
+            expect(res.statusCode).toEqual(200);
+            expect(res.body).toHaveLength(usersInRoleCountBeforeDelete - usersToDelete.length);
+
+            for (const user of usersToDelete) {
+                expect(res.body).not.toContainEqual(expect.objectContaining({ id: user.id }));
+            }
+            for (const user of usersExpectedAfterDelete) {
+                expect(res.body).toContainEqual(expect.objectContaining({ id: user.id }));
+            }
+
+            const [usersInRoleAfterDelete, usersInRoleCountAfterDelete] = await userRepo.findAndCountBy({ roleId });
+
+            expect(usersInRoleCountAfterDelete).toBe(usersInRoleCountBeforeDelete - usersToDelete.length);
+            for (const user of usersToDelete) {
+                expect(usersInRoleAfterDelete).not.toContainEqual(expect.objectContaining({ id: user.id }));
+            }
+            for (const user of usersExpectedAfterDelete) {
+                expect(res.body).toContainEqual(expect.objectContaining({ id: user.id }));
+            }
+        });
+
+        test('Delete users with empty array', async () => {
+            const userRepo = AppDataSource.getRepository(UserEntity);
+            const agent = await createAuthenticatedAgent(server, { user: { username: 'testUser' }, permissions: [...ALL_PERMISSIONS] });
+            const user = await getUserByUsername('testUser');
+            const roleId = user!.roleId as string;
+            
+            const [usersInRoleBeforeDelete, usersInRoleCountBeforeDelete] = await userRepo.findAndCountBy({ roleId });
+
+            const payload: RoleUsersDeleteBody = {
+                usersIds: []
+            };
+
+            const res = await agent.delete(`/api/roles/${roleId}/users`).send(payload);
+
+            expect(res.statusCode).toEqual(200);
+            expect(res.body).toHaveLength(usersInRoleCountBeforeDelete);
+
+            for (const user of usersInRoleBeforeDelete) {
+                expect(res.body).toContainEqual(expect.objectContaining({ id: user.id }));
+            }
+
+            const [usersInRoleAfterDelete, usersInRoleCountAfterDelete] = await userRepo.findAndCountBy({ roleId });
+
+            expect(usersInRoleCountAfterDelete).toBe(usersInRoleCountBeforeDelete);
+            for (const user of usersInRoleBeforeDelete) {
+                expect(usersInRoleAfterDelete).toContainEqual(expect.objectContaining({ id: user.id }));
+            }
+        });
+
+        test('Delete users fails if body is invalid', async () => {
+            const agent = await createAuthenticatedAgent(server);
+            const testUser = await createTestUser({ user: { username: 'fakeUser', email: 'fakeUser@gmail.com' } });
+            const roleId = testUser.roleId;
+
+            const withoutBodyRes = await agent.delete(`/api/roles/${roleId}/users`);
+            expect(withoutBodyRes.statusCode).toEqual(400);
+
+            const invalidBodyRes = await agent.delete(`/api/roles/${roleId}/users`).send({ usersIds: 5 });
+            expect(invalidBodyRes.statusCode).toBeGreaterThanOrEqual(400);
+
+            const invalidIdsRes = await agent.delete(`/api/roles/${roleId}/users`).send({ usersIds: [testUser.id, 2] });
+            expect(invalidIdsRes.statusCode).toBeGreaterThanOrEqual(400);
+        });
+
+        test('Delete users fails if any user does\'nt exist', async () => {
+            const userRepo = AppDataSource.getRepository(UserEntity);
+            const agent = await createAuthenticatedAgent(server, { user: { username: 'testUser' }, permissions: [...ALL_PERMISSIONS] });
+            const user = await getUserByUsername('testUser');
+            const roleId = user!.roleId as string;
+            const testUser1 = await createTestUser({ user: { username: 'fakeUser1', password: 'password', email: 'fakeUser1@gmail.com' } });
+
+            const [usersInRoleBeforeDelete, usersInRoleCountBeforeDelete] = await userRepo.findAndCountBy({ roleId });
+
+            const usersToDelete = [testUser1];
+            const usersToDeleteIds = usersToDelete.map(user => user.id);
+            
+            const payload: RoleUsersAddBody = {
+                usersIds: [...usersToDeleteIds, fakeUUID]
+            };
+
+            const res = await agent.delete(`/api/roles/${roleId}/users`).send(payload);
+
+            expect(res.statusCode).toEqual(422);
+
+            const [usersInRoleAfterDelete, usersInRoleCountAfterDelete] = await userRepo.findAndCountBy({ roleId });
+
+            expect(usersInRoleCountAfterDelete).toBe(usersInRoleCountBeforeDelete);
+            for (const user of usersInRoleBeforeDelete) {
+                expect(usersInRoleAfterDelete).toContainEqual(expect.objectContaining({ id: user.id }));
+            }
+        });
+
+        test('Delete users fails if role is root', async () => {
+            const agent = await createAuthenticatedAgent(server);
+            const rootRoleEntity = await getRootRole();
+    
+            const res = await agent.delete(`/api/roles/${rootRoleEntity.id}/users`).send({ usersIds: [] });
+    
+            expect(res.statusCode).toEqual(405);
+        });
+
+        test('Delete users fails if role doesn\'t exist', async () => {
+            const agent = await createAuthenticatedAgent(server);
+            const res = await agent.delete('/api/roles/fakeRoleId/users').send({ usersIds: [] });
+    
+            expect(res.statusCode).toEqual(404);
+    
+            const res2 = await agent.delete(`/api/roles/${fakeUUID}/users`).send({ usersIds: [] });
+    
+            expect(res2.statusCode).toEqual(404);
+        });
+
+        test('Add users fails if unauthenticated', async () => {
+            const res = await request(server).delete('/api/roles/fakeRoleId/users').send({ usersIds: [] });
+    
+            expect(res.statusCode).toEqual(401);
+        });
+
+        test('Add users fails if unauthorized', async () => {
+            const noPermissionAgent = await createAuthenticatedAgent(server, {
+                user: { username: 'noPermissionUser', email: 'noPermissionUser@gmail.com' },
+                permissions: []
+            });
+    
+            const noPermissionRes = await noPermissionAgent.delete('/api/roles/fakeRoleId/users');
+            expect(noPermissionRes.statusCode).toEqual(403);
+    
+            const lowPermissionAgent1 = await createAuthenticatedAgent(server, {
+                user: { username: 'lowPermissionUser1', email: 'lowPermissionUser1@gmail.com' },
+                permissions: ALL_PERMISSIONS.filter(permission => permission !== 'read:roles')
+            });
+            const lowPermissionRes1 = await lowPermissionAgent1.delete('/api/roles/fakeRoleId/users');
+            expect(lowPermissionRes1.statusCode).toEqual(403);
+
+            const lowPermissionAgent2 = await createAuthenticatedAgent(server, {
+                user: { username: 'lowPermissionUser2', email: 'lowPermissionUser2@gmail.com' },
+                permissions: ALL_PERMISSIONS.filter(permission => permission !== 'update:users')
+            });
+            const lowPermissionRes2 = await lowPermissionAgent2.delete('/api/roles/fakeRoleId/users');
+            expect(lowPermissionRes2.statusCode).toEqual(403);
         });
     });
 });
