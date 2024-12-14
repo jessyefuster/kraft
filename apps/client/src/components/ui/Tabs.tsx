@@ -43,6 +43,7 @@ const TabPanel = ({ children, value, index, ...rest }: TabPanelProps) => (
 export interface Tab {
   label: string;
   component: React.ReactNode;
+  hidden?: boolean;
   disabled?: boolean;
 }
 
@@ -61,9 +62,9 @@ const Tabs = ({ tabs }: Props) => {
     <>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <MuiTabs value={value} onChange={handleTabChange} aria-label="basic tabs example">
-          {tabs.map(({ label, disabled }, index) => (
-            <MuiTab label={label} disabled={disabled} {...tabA11yProps(index)} key={index}/>
-          ))}
+          {tabs.map(({ label, disabled, hidden }, index) =>
+            hidden ? null : <MuiTab label={label} disabled={disabled} {...tabA11yProps(index)} key={index}/>
+          )}
         </MuiTabs>
       </Box>
       {tabs.map(({ component }, index) => (

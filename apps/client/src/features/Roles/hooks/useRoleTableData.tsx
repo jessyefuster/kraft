@@ -6,6 +6,7 @@ import Tooltip from '@mui/material/Tooltip';
 import AutoColoredChip from '../../../components/ui/AutoColoredChip';
 import type { Column, Item } from '../../../components/ui/Table';
 import { truncateListWithSummary } from '../../../utils/truncateListWithSummary';
+import { useHasPermissions } from '../../Permissions/hooks/useHasPermissions';
 import DeleteRoleButton from '../components/DeleteRoleButton';
 import ViewDetailButton from '../components/ViewDetailButton';
 
@@ -18,6 +19,9 @@ type RoleColumns<T> = {
 export type ColumnsDisplay = RoleColumns<boolean>;
 
 export const useRoleTableData = (roles: RoleDTO[]) => {
+  const showDeleteAction = useHasPermissions(['delete:roles']);
+  const showUsers = useHasPermissions(['read:users']);
+
   const getPermissionsLabel = useCallback((role: RoleDTO) => {
     const permissionCodes = role.permissions?.map(permission => permission.code) || [];
 
@@ -34,7 +38,7 @@ export const useRoleTableData = (roles: RoleDTO[]) => {
     const columns: Column<RoleColumn>[] = [
       { id: 'name', title: 'Nom du rôle' },
       { id: 'description', title: 'Description' },
-      { id: 'users', title: 'Utilisateurs', align: 'right' },
+      { id: 'users', title: 'Utilisateurs', align: 'right', hidden: !showUsers },
       { id: 'permissions', title: 'Permissions', align: 'right' },
       { id: 'actions', title: 'Actions', align: 'right' }
     ];
@@ -44,7 +48,7 @@ export const useRoleTableData = (roles: RoleDTO[]) => {
       data: {
         name: <AutoColoredChip labelStr={role.name} label={role.name} variant="outlined" />,
         description: role.description,
-        users: (
+        users: role.users && (
           <Tooltip title={getUsersLabel(role)} placement="left">
             <span>{role.usersCount}</span>
           </Tooltip>
@@ -56,7 +60,7 @@ export const useRoleTableData = (roles: RoleDTO[]) => {
         ),
         actions:
           <>
-            <DeleteRoleButton id={role.id} />
+            {showDeleteAction && <DeleteRoleButton id={role.id} />}
             <ViewDetailButton id={role.id} />
           </>
       }
@@ -66,7 +70,7 @@ export const useRoleTableData = (roles: RoleDTO[]) => {
       columns,
       items
     };
-  }, [roles, getPermissionsLabel, getUsersLabel]);
+  }, [roles, getPermissionsLabel, getUsersLabel, showDeleteAction, showUsers]);
 
   return data;
 };

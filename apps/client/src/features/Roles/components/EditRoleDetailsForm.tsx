@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 
 import Form from '../../../components/forms/Form';
 import TextInput from '../../../components/forms/TextInput';
+import { useHasPermissions } from '../../Permissions/hooks/useHasPermissions';
 import { useEditRoleForm } from '../hooks/useEditRoleForm';
 
 const ActionsContainer = styled(Box)({
@@ -22,6 +23,7 @@ interface Props {
 }
 
 const EditRoleDetailsForm = ({ role, onSubmitSuccess }: Props) => {
+  const isFormEnabled = useHasPermissions(['update:roles']);
   const { form, requiredFields, isLoading, submitHandler } = useEditRoleForm(role?.id || '', { defaultValues: role });
 
   return (
@@ -34,6 +36,7 @@ const EditRoleDetailsForm = ({ role, onSubmitSuccess }: Props) => {
         control={form.control}
         required={requiredFields.name}
         sx={{ mt: 1 }}
+        disabled={!isFormEnabled}
       />
       <InputLabel sx={{ mt: 2 }}>
         <Typography variant="subtitle1">Description</Typography>
@@ -44,17 +47,21 @@ const EditRoleDetailsForm = ({ role, onSubmitSuccess }: Props) => {
         control={form.control}
         required={requiredFields.description}
         sx={{ mt: 1 }}
+        disabled={!isFormEnabled}
       />
-      <ActionsContainer>
-        <LoadingButton
-          loading={isLoading}
-          type="submit"
-          variant="contained"
-          sx={{ ml: 2 }}
-        >
-          Valider
-        </LoadingButton>
-      </ActionsContainer>
+      {isFormEnabled &&
+        <ActionsContainer>
+          <LoadingButton
+            loading={isLoading}
+            type="submit"
+            variant="contained"
+            sx={{ ml: 2 }}
+            disabled={!isFormEnabled}
+          >
+            Valider
+          </LoadingButton>
+        </ActionsContainer>
+      }
     </Form>
   );
 };

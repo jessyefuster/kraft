@@ -14,8 +14,10 @@ import { createUserDTOFromEntity, userHasPermissions } from '../../services/user
 import { validateCreateBody, validateDeleteParams, validateGetParams, validatePermissionsUpdatePayload, validateUpdatePayload, validateUsersAddPayload, validateUsersDeletePayload } from './validators';
 
 const getAll = async (req: Request, res: Response<RolesListResponse>) => {
+    const appendUsers = req.user && userHasPermissions(req.user, ['read:users']);
+
     const roleRepo = AppDataSource.getRepository(RoleEntity);
-    const rolesEntities = await roleRepo.find({ relations: { permissions: { group: true }, users: true } });
+    const rolesEntities = await roleRepo.find({ relations: { permissions: { group: true }, users: appendUsers } });
 
     const roles = createRoles(rolesEntities);
 

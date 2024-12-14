@@ -10,6 +10,7 @@ import type { ColumnsDisplay } from '../../Users/hooks/useUserTableData';
 import { useUserTableData } from '../../Users/hooks/useUserTableData';
 import AddUsersButton from './AddUsersButton';
 import DeleteUsersButton from './DeleteUsersButton';
+import { useHasPermissions } from '../../Permissions/hooks/useHasPermissions';
 
 const columnsDisplay: ColumnsDisplay = {
   role: false,
@@ -22,16 +23,19 @@ interface Props {
 }
 
 const UsersPanel = ({ roleId, users }: Props) => {
+  const showEditAction = useHasPermissions(['update:users']);
   const tableData = useUserTableData(users || [], useMemo(() => ({
-    columnsDisplay,
+    columnsDisplay: { ...columnsDisplay, actions: showEditAction },
     renderActions: ({ userId }) => <DeleteUsersButton roleId={roleId} usersIds={[userId]} />
-  }), [roleId]));
+  }), [roleId, showEditAction]));
 
   return users?.length
     ? <>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Typography>Ajouter ou supprimer des utilisateurs au rôle.</Typography>
-          <AddUsersButton roleId={roleId} roleUsers={users} sx={{ marginLeft: 2, flexShrink: 0 }} />
+          <Typography>Liste des utilisateurs possédant ce rôle.</Typography>
+          {showEditAction &&
+            <AddUsersButton roleId={roleId} roleUsers={users} sx={{ marginLeft: 2, flexShrink: 0 }} />
+          }
         </Box>
         <Box sx={{ flex: 1, position: 'relative', marginTop: 4 }}>
           <Table
@@ -47,7 +51,7 @@ const UsersPanel = ({ roleId, users }: Props) => {
         title="C'est vide !"
         message="Aucun utilisateur ne possède ce rôle"
       >
-        <AddUsersButton roleId={roleId} roleUsers={users} />
+        {showEditAction && <AddUsersButton roleId={roleId} roleUsers={users} />}
       </StateIllustration>
     )
   ;

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+
 import { Box, styled } from '@mui/material';
 import Typography from '@mui/material/Typography';
 
@@ -7,9 +8,10 @@ import Page from '../../../components/layout/Page';
 import StateIllustration from '../../../components/ui/StateIllustration';
 import Table from '../../../components/ui/Table';
 import PermissionWrapper from '../../Permissions/components/PermissionWrapper';
+import { useHasPermissions } from '../../Permissions/hooks/useHasPermissions';
 import CreateUserButton from '../components/CreateUserButton';
-import { useUserTableData } from '../hooks/useUserTableData';
 import DeleteUserButton from '../components/DeleteUserButton';
+import { useUserTableData } from '../hooks/useUserTableData';
 
 const Header = styled(Box)({
   display: 'flex',
@@ -22,10 +24,15 @@ interface Props {
 }
 
 const UsersPage = ({ title }: Props) => {
+  const showDeleteAction = useHasPermissions(['delete:users']);
   const { data: users = [], isError } = useGetUsersQuery();
   const tableData = useUserTableData(users, useMemo(() => ({
-    renderActions: ({ userId }) => <DeleteUserButton id={userId} />
-  }), []));
+    renderActions: ({ userId }) =>
+      // eslint-disable-next-line react/jsx-no-useless-fragment
+      <>
+        {showDeleteAction && <DeleteUserButton id={userId} />}
+      </>
+  }), [showDeleteAction]));
 
   return (
     <Page title={title} padding={4}>
